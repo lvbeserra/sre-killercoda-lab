@@ -14,6 +14,7 @@ import sqlite3
 import time
 
 import pika
+from metrics_server import increment, start_metrics_server
 
 QUEUE = os.getenv("RABBIT_QUEUE", "notificacoes-pagamentos")
 DLQ = os.getenv("RABBIT_DLQ", "notificacoes-pagamentos-dlq")
@@ -64,6 +65,7 @@ def handle_delivery(channel, method, properties, body, database):
             action="REJECT_TO_DLQ",
         )
         channel.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
+        increment("invalid")
         return
 
     # Como NÃO há efeito externo, registrar na tabela é o "processamento"
@@ -78,20 +80,26 @@ def handle_delivery(channel, method, properties, body, database):
     except sqlite3.Error as exc:
         database.rollback()
         log(event="DB_ERROR", pagamento_id=payment_id, error=str(exc))
+        increment("db_error")
         channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         time.sleep(2)
         return
 
     if cursor.rowcount == 1:
         log(event="NOTIFICATION_PROCESSED", pagamento_id=payment_id)
+        increment("processed")
     else:
         log(event="DUPLICATE_SKIPPED", pagamento_id=payment_id)
+        increment("duplicate_skipped")
     channel.basic_ack(delivery_tag=method.delivery_tag)
+    increment("ack")
     log(event="ACK", pagamento_id=payment_id, queue=QUEUE)
 
 
 def main():
     database = open_database()
+    start_metrics_server()
+    log(event="METRICS_READY", endpoint=":9100/metrics")
     log(event="DB_READY", db_path=DB_PATH)
     try:
         while running:
@@ -126,6 +134,7 @@ def main():
                 if channel.is_open:
                     channel.cancel()
             except Exception as exc:
+                increment("reconnect")
                 log(event="WORKER_RECONNECT", error=str(exc))
                 if running:
                     time.sleep(3)
