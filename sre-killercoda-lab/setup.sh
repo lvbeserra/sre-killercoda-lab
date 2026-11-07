@@ -82,7 +82,16 @@ if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
         if bash labs/restore-payment-bridge.sh; then
           if [[ "${SRE_ENABLE_NOTIFICATION_WORKER:-1}" == "1" ]]; then
             echo "=== INICIANDO WORKER DE NOTIFICACOES ==="
-            bash labs/restore-notification-worker.sh || echo "AVISO: worker de notificacoes nao iniciou; consulte logs."
+            if bash labs/restore-notification-worker.sh; then
+              if [[ "${SRE_ENABLE_OBSERVER:-1}" == "1" ]]; then
+                echo "=== INICIANDO COLETA HISTORICA SRE ==="
+                bash labs/restore-sre-observer.sh || echo "AVISO: observador historico nao iniciou; consulte logs."
+              else
+                echo "Coletor historico desativado por SRE_ENABLE_OBSERVER=0."
+              fi
+            else
+              echo "AVISO: worker de notificacoes nao iniciou; consulte logs."
+            fi
           else
             echo "Notification worker desativado por SRE_ENABLE_NOTIFICATION_WORKER=0."
           fi
