@@ -245,3 +245,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - `test-notification-worker.sh`: evento de teste `PAG-WORKER-20261107T210512-25693` publicado no Kafka; bridge logou `FORWARDED` em partição 0, offset 2, fila `notificacoes-pagamentos`; worker logou `ACK` para o **mesmo pagamento_id**. **Fluxo completo Kafka → bridge → RabbitMQ → worker validado por logs correlacionados.**
 - Exercício seguinte publicado no GitHub em `labs/test-resilience-worker.sh`: reduzir somente o worker a 0, publicar evento fictício, verificar acumulação/encaminhamento, restaurar worker e aguardar ACK. Contém trap para tentar restaurar a réplica também ao sair por erro. **Ainda NÃO foi executado**.
 - A arquitetura é *at-least-once*, com possibilidade de duplicatas e perda de dados quando o Pod do broker é substituído (Kafka/RabbitMQ usam `emptyDir`). Não é um sistema de pagamentos real; posteriormente abordar idempotência, DLQ, métricas e Dynatrace.
+
+## Resiliência testada — 07/11/2026 21:08 UTC
+- `bash sre-killercoda-lab/labs/test-resilience-worker.sh` **SUCESSO**.
+- Parada controlada do `notification-worker` para 0 réplicas, com Kafka, payment-bridge e RabbitMQ operacionais.
+- Mensagem fictícia `PAG-RESILIENCIA-20261107T210854-10902` foi publicada e a Bridge confirmou `FORWARDED` na partição Kafka 0, offset 3.
+- Na fila `notificacoes-pagamentos` com Worker parado: `messages_ready=1`, `messages_unacknowledged=0`.
+- Após escalar Worker de volta a 1 réplica, rollout teve sucesso e o Worker registrou `ACK` com o mesmo `pagamento_id`.
+- Na fila após recuperação: `messages_ready=0`, `messages_unacknowledged=0`.
+- Conclusão válida: a fila reteve a notificação durante a interrupção do consumidor e o consumo foi retomado após reinicialização; **não foi testada queda do broker, perda de persistência, nem mecanismo automático de autoscaling**.
+- Próxima aula: `labs/test-duplicatas.sh` publica exatamente duas mensagens de teste com `pagamento_id` igual, verifica dois `FORWARDED` e dois `ACK` e demonstra a ausência atual de deduplicação. **Script publicado, não executado ainda**.
