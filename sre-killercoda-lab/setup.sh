@@ -65,24 +65,25 @@ git config --local user.email "126087437+lvbeserra@users.noreply.github.com"
 echo "=== RESTAURANDO LABORATORIO ==="
 bash restore.sh
 
+echo "=== VALIDANDO LABORATORIO PRINCIPAL ==="
+bash validate.sh
+
+echo "=== INICIANDO CHECKPOINTS ANTES DO MIDDLEWARE ==="
+bash start-checkpoints.sh
+
 echo "=== INICIANDO APACHE, KAFKA E RABBITMQ ==="
 # Desative num cenário com pouca memória usando SRE_ENABLE_MIDDLEWARE=0.
 if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
-  bash labs/restore-middleware.sh
+  if bash labs/restore-middleware.sh; then
+    echo "=== VALIDANDO MIDDLEWARE ==="
+    bash labs/validate-middleware.sh || echo "AVISO: middleware ainda nao validou; confira kubectl -n sre-middleware-lab get pods e logs."
+  else
+    echo "AVISO: implantacao middleware com falha; laboratorio base e checkpoints continuam ativos."
+  fi
 else
   echo "Middleware desativado por SRE_ENABLE_MIDDLEWARE=0."
 fi
-
-echo "=== VALIDANDO LABORATORIO ==="
-bash validate.sh
-if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
-  echo "=== VALIDANDO MIDDLEWARE ==="
-  bash labs/validate-middleware.sh || echo "AVISO: middleware ainda nao validou; confira kubectl -n sre-middleware-lab get pods e logs."
-fi
-
-echo "=== INICIANDO CHECKPOINTS ==="
-bash start-checkpoints.sh
 echo
-echo "SUCESSO: ambiente restaurado; GitHub autenticado; monitor configurado."
+echo "Bootstrap finalizado: confira o status de todos os Pods e o sucesso do git push no log."
 echo "Confira envio: sleep 3; tail -30 /tmp/sre-checkpoints.log"
 echo "IMPORTANTE: a VM e a autenticacao do gh não persistem entre sessões KillerCoda."
