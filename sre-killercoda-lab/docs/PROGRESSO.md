@@ -214,3 +214,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Recursos (primeiro / segundo nó respectivamente): CPU requests 365m(36%) / 470m(47%); CPU limits 1200m(120%) / 3050m(305%); memory requests 258Mi(12%) / 802Mi(44%); memory limits 1556Mi(72%) / 3424Mi(189%). Esses são somatórios de requests/limits, não consumo real.
 - Adicionado `labs/test-mensageria.sh`: teste reprodutível de produção e consumo separado de eventos fictícios Kafka + notificações RabbitMQ. **Ainda não há integração app Kafka → RabbitMQ nem Dynatrace instalado.**
 - Próxima aula: executar `bash sre-killercoda-lab/labs/test-mensageria.sh` a partir da raiz do clone, verificar retorno e então criar bridge e observabilidade.
+
+## Checkpoint de aula — 07/11/2026 20:54 UTC: mensageria validada
+- `bash sre-killercoda-lab/labs/test-mensageria.sh` concluído com sucesso.
+- Kafka: produzido e consumido 1 evento fictício `{"pagamento_id":"PAG-LAB-20261107T205423Z","valor_centavos":1234,"status":"APROVADO_SIMULADO"}`; CLI relatou `Processed a total of 1 messages`.
+- RabbitMQ: publicado e consumido `Notificacao LAB PAG-LAB-20261107T205423Z`; script concluiu com `SUCESSO`.
+- **Esses dois testes foram independentes**; ainda não comprovavam integração automática Kafka → RabbitMQ.
+- Adicionados `apps/payment-bridge/bridge.py`, `requirements.txt`, `labs/payment-bridge.yaml`, `labs/restore-payment-bridge.sh` e `labs/test-bridge.sh`. Objetivo: consumir pagamentos simulados no Kafka, publicar notificações no RabbitMQ com publisher confirms, e só então commitar offsets Kafka.
+- Inicializador `setup.sh` atualizado para implantar bridge quando middleware estiver saudável e `SRE_ENABLE_BRIDGE` não for `0`. Checkpoint versiona também arquivos de código da bridge.
+- **PENDENTE de validação na sessão Kubernetes:** `git pull --ff-only origin main`, `bash sre-killercoda-lab/labs/restore-payment-bridge.sh` e `bash sre-killercoda-lab/labs/test-bridge.sh`.
+- Sem garantia de exatamente uma entrega: em falhas pode haver duplicação; produção exige idempotência, DLQ, persistência, TLS, segurança e contratos.
