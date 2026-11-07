@@ -335,3 +335,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - `http://notification-worker-metrics:9100/metrics` validado por requisição interna via Pod `payment-bridge`.
 - **Implementado e publicado, ainda não executado**: `labs/check-sre-alerts.sh`, checagem manual leve de replicas Ready, scrape dos contadores e filas RabbitMQ; retorna 0 OK / 1 WARNING / 2 CRITICAL. Como há 1 mensagem intencional na DLQ, o teste deve sinalizar WARNING até sua análise. Não substitui monitoramento contínuo ou alertas reais.
 - Próxima ação: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/check-sre-alerts.sh`. Depois projetar SLI/SLO e observabilidade durável em ambiente com recursos adequados.
+
+## Check SRE e WARNING DLQ — 07/11/2026, após testes de métricas
+- Saída validada de `labs/check-sre-alerts.sh`: Kafka, RabbitMQ, payment-bridge e notification-worker **1/1 Ready**.
+- Contadores observados: `processed=1`, `duplicate_skipped=1`, `invalid=1`, `ack=2`, `db_error=0`, `reconnect=0`.
+- Filas RabbitMQ: `notificacoes-pagamentos` pronta=0, unacked=0; `notificacoes-pagamentos-dlq` pronta=1, unacked=0.
+- Veredito do script: **WARNING: revisar filas e mensagens pendentes**. Aviso correto, devido à notificação inválida da aula anterior ainda retida na DLQ. Evidência mantida; não apagar automaticamente.
+- Próxima aula publicada no GitHub: `labs/test-sli-slo.sh`. Executa 20 consultas HTTP ao Apache e 20 ao Service /metrics do Worker a partir da bridge e calcula taxa de sucesso/p50/p95 da amostra. **Ainda não foi executado no cluster**.
+- Limitação: snapshot com 20 amostras não comprova SLO de disponibilidade mensal 99,9%, nem observa latências dos usuários reais ou tendências ao longo do tempo.
