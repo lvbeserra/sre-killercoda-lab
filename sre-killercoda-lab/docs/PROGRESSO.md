@@ -359,3 +359,17 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Publicado `labs/test-multiwindow-burn-rate.sh` para simular três cenários de alertas multiwindow seguindo o Google SRE Workbook: PAGE_FAST 14,4x simultaneamente em 1h e 5m; PAGE_SUSTAINED 6x em 6h e 30m. **Script novo ainda não executado no KillerCoda**. Os números são amostras FICTÍCIAS, não capturas de histórico do cluster.
 - Próximo comando: `git pull --rebase origin main; bash sre-killercoda-lab/labs/test-multiwindow-burn-rate.sh`.
 - Referência de projeto: https://sre.google/workbook/alerting-on-slos/ . Regras operacionais reais exigem coleta contínua e definições corretas do que constitui uma falha do usuário.
+
+## Multiwindow burn-rate simulado validado — 07/11/2026
+- `test-multiwindow-burn-rate.sh` executado e validado com **3 cenários**.
+- Cenário saudável: burn 0x em todas as janelas; sem page.
+- Falha aguda: burn 16x (1h), 20x (5m), 3x (6h), 18x (30m); **PAGE_FAST** disparou, `PAGE_SUSTAINED` não.
+- Falha sustentada: burn 7x (1h), 8x (5m), 8x (6h), 8x (30m); **PAGE_SUSTAINED** disparou, `PAGE_FAST` não.
+- **SIMULAÇÕES**, não decisões baseadas em métricas coletadas em 1h/6h reais.
+
+## Coleta histórica sintética — preparada, pendente de validação
+- Publicado `apps/observability/collector.py`: verifica Apache HTTP e Service `/metrics` internamente a cada 30 segundos; registra sucesso, latência e erro em SQLite.
+- Adicionados `labs/sre-observer.yaml`, `labs/restore-sre-observer.sh`, `labs/report-sre-observer.sh`: Deployment único leve e PVC de 64Mi `sre-observer-data`. Bootstrap `iniciar.sh` passou a restaurar observador por padrão após Worker; desativável via `SRE_ENABLE_OBSERVER=0`. Backup Git inclui código, mas não contém DB.
+- Próximo teste **ainda não executado no cluster**: `git pull --rebase origin main; bash sre-killercoda-lab/labs/restore-sre-observer.sh; bash sre-killercoda-lab/labs/report-sre-observer.sh 5`.
+- Nos primeiros minutos, `history_sufficient_for_window=false` é esperado; aguarde coletas suficientes para cobertura. Observações são internas: queda total do cluster não pode ser detectada por um coletor dentro do próprio cluster.
+- Limitações: PVC local-path só persiste enquanto VM/nó/storage durar; histórico não sobrevive à expiração do KillerCoda; SLO por requisições reais e alertas de burn-rate real continuam pendentes; Dynatrace não instalado.
