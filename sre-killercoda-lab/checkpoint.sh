@@ -25,7 +25,7 @@ STAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 } >> docs/PROGRESSO.md
 
 # Lista permitida de arquivos; NUNCA adiciona tokens, kubeconfig, Secrets ou logs inteiros.
-git add -- docs/*.md labs/*.yaml lab-completo.yaml README.md restore.sh validate.sh checkpoint.sh start-checkpoints.sh setup.sh ../iniciar.sh ../README.md labs/*.sh labs/*.html labs/*.yaml docs/*.md
+git add -- docs/*.md labs/*.yaml labs/*.sh labs/*.html apps/payment-bridge/bridge.py apps/payment-bridge/requirements.txt lab-completo.yaml README.md restore.sh validate.sh checkpoint.sh start-checkpoints.sh setup.sh ../iniciar.sh ../README.md
 
 if git diff --cached --quiet; then
   echo "Nenhuma alteração para salvar."
