@@ -1,0 +1,16 @@
+# Evitar versionar credenciais e artefatos locais
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.kubeconfig
+kubeconfig
+.kube/
+.ssh/
+.config/gh/
+*.log
+*.tmp
+*.swp
+__pycache__/
