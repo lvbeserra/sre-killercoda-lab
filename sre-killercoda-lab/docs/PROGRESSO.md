@@ -1,5 +1,14 @@
 # CHECKPOINT DO CURSO — 07/11/2026
 
+## Atualização validada — 07/11/2026: Rollout e GitHub
+- Repositório público `lvbeserra/sre-killercoda-lab` clonado e restaurado com `bash restore.sh`; `bash validate.sh` confirmou DNS e HTTP Blue/Green/Drain.
+- Novo cenário com **2 nós Ready**: `controlplane` e `node01`; `web-blue` com 2 réplicas distribuídas, `web-green` 1, `drain-demo` 2 réplicas distribuídas.
+- Rolling Update executado com `maxUnavailable=0` e `maxSurge=1`, 120 consultas HTTP GET `/ready` durante `rollout restart`: **120 OK, 0 FAIL, CLIENT_EXIT_CODE=0**.
+- Novos Pods `drain-demo-5577f764d7-2ts7j` em `controlplane` e `drain-demo-5577f764d7-cr99v` em `node01`, ambos 1/1 Ready ao fim; antigos encerrados com status Completed.
+- O teste cobre requisições curtas observadas, NÃO garante zero downtime universal nem testa `/slow` durante rollout.
+- Scripts `checkpoint.sh` e `start-checkpoints.sh` adicionados. A cada sessão, iniciar monitor 50 minutos; push automático requer autenticação Git segura **sem** armazenar token no repositório.
+- **Próxima aula**: teste de `/slow` concorrente com Rolling Update e coleta por Pod, endpoints e logs; depois políticas Cilium, multi-node, Istio/Canary.
+
 ## Ambiente observado
 - KillerCoda / cluster Kubernetes single-node, Ubuntu 24.04.5, v1.37.1; 1 vCPU, ~2.2 GiB RAM, ~20 GB disco.
 - Rede com Cilium v1.20.3, `KubeProxyReplacement: True`, `Backend Selection: Random`, `Socket LB: Enabled` conforme status em runtime; configmap mostrava bpf-lb-sock false, divergência ainda não explicada em definitivo.
