@@ -79,7 +79,16 @@ if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
     if bash labs/validate-middleware.sh; then
       echo "=== INICIANDO BRIDGE KAFKA -> RABBITMQ ==="
       if [[ "${SRE_ENABLE_BRIDGE:-1}" == "1" ]]; then
-        bash labs/restore-payment-bridge.sh || echo "AVISO: bridge nao iniciou; consulte kubectl -n sre-middleware-lab logs deploy/payment-bridge"
+        if bash labs/restore-payment-bridge.sh; then
+          if [[ "${SRE_ENABLE_NOTIFICATION_WORKER:-1}" == "1" ]]; then
+            echo "=== INICIANDO WORKER DE NOTIFICACOES ==="
+            bash labs/restore-notification-worker.sh || echo "AVISO: worker de notificacoes nao iniciou; consulte logs."
+          else
+            echo "Notification worker desativado por SRE_ENABLE_NOTIFICATION_WORKER=0."
+          fi
+        else
+          echo "AVISO: bridge nao iniciou; consulte kubectl -n sre-middleware-lab logs deploy/payment-bridge"
+        fi
       else
         echo "Bridge desativada por SRE_ENABLE_BRIDGE=0."
       fi
