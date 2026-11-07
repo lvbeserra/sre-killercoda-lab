@@ -286,3 +286,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
   bash sre-killercoda-lab/labs/test-metrics.sh
   ```
 - Recursos limitados: coletar `/metrics` antes de instalar Prometheus/Grafana completos, OpenTelemetry Collector ou Dynatrace. Este cenário não possui monitoramento Dynatrace ativo nem oferece persistência da VM KillerCoda.
+
+## Métricas Prometheus verificadas — 07/11/2026 21:20 UTC
+- O usuário aplicou o novo `notification-worker` com `metrics_server.py`, reiniciou o Deployment e validou rollout completo.
+- Logs mostram `METRICS_READY :9100/metrics`, `DB_READY /data/processed.sqlite3` e `WORKER_READY`.
+- Scrape `kubectl exec ... python urllib.request` retornou endpoint Prometheus `200` com métricas `sre_notification_processed_total`, `duplicate_skipped_total`, `invalid_total`, `ack_total`, `db_error_total`, `reconnect_total` e `start_time_seconds`. Todos os contadores foram 0 imediatamente após restart, comportamento esperado.
+- Service `notification-worker-metrics` criado como ClusterIP, porta 9100. PVC `notification-worker-data` segue Bound com 64Mi, `local-path`.
+- **PENDENTE**: validar incremento dos counters após transações fictícias e exposição pelo Service interno. Script `labs/test-metrics-live.sh` publicado para testar idempotência, DLQ e aumento das métricas. Executar `git pull --rebase origin main; bash sre-killercoda-lab/labs/test-metrics-live.sh`. Não foi executado ainda.
+- Sem stack Prometheus/Grafana instalada; não instalar Dynatrace pesado sem checar capacidade.
