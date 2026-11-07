@@ -203,3 +203,14 @@ sre-web-green-rxdd2   IPv4          8080    192.168.1.32                 4m57s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## Verificação middleware — 07/11/2026 (saída enviada pelo aluno)
+- Kubernetes v1.37.1 com **controlplane e node01 Ready**.
+- `sre-middleware-lab`: Apache HTTP, Kafka e RabbitMQ, todos **1/1 Running, zero restarts** no momento da coleta.
+- Apache: requisição HTTP interna retornou a página de demonstração.
+- Kafka: tópico `pagamentos-simulados`, 1 partição, leader 1, replicas 1, ISR 1. **Tópico verificado, ainda sem evento de teste consumido nessa coleta.**
+- RabbitMQ: `rabbitmq-diagnostics -q ping` respondeu `Ping succeeded`; imagem 4.1-management corrigida com `rabbitmq.conf` via ConfigMap e startup/readiness TCP 5672.
+- GitHub: `checkpoint.sh` publicou commit `0f1772e` e `git status -sb` confirmou `main...origin/main` naquele momento; a execução autônoma após 50 minutos **não foi observada ainda**.
+- Recursos (primeiro / segundo nó respectivamente): CPU requests 365m(36%) / 470m(47%); CPU limits 1200m(120%) / 3050m(305%); memory requests 258Mi(12%) / 802Mi(44%); memory limits 1556Mi(72%) / 3424Mi(189%). Esses são somatórios de requests/limits, não consumo real.
+- Adicionado `labs/test-mensageria.sh`: teste reprodutível de produção e consumo separado de eventos fictícios Kafka + notificações RabbitMQ. **Ainda não há integração app Kafka → RabbitMQ nem Dynatrace instalado.**
+- Próxima aula: executar `bash sre-killercoda-lab/labs/test-mensageria.sh` a partir da raiz do clone, verificar retorno e então criar bridge e observabilidade.
