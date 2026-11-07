@@ -17,6 +17,7 @@ kubectl -n "$NS" exec deployment/rabbitmq -- \
 echo "=== APLICANDO CÓDIGO E VOLUME PERSISTENTE ==="
 kubectl -n "$NS" create configmap notification-worker-code \
   --from-file=worker.py=apps/notification-worker/worker.py \
+  --from-file=metrics_server.py=apps/notification-worker/metrics_server.py \
   --from-file=requirements.txt=apps/notification-worker/requirements.txt \
   --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f labs/notification-worker.yaml
