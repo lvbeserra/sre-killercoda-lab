@@ -294,3 +294,35 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Service `notification-worker-metrics` criado como ClusterIP, porta 9100. PVC `notification-worker-data` segue Bound com 64Mi, `local-path`.
 - **PENDENTE**: validar incremento dos counters após transações fictícias e exposição pelo Service interno. Script `labs/test-metrics-live.sh` publicado para testar idempotência, DLQ e aumento das métricas. Executar `git pull --rebase origin main; bash sre-killercoda-lab/labs/test-metrics-live.sh`. Não foi executado ainda.
 - Sem stack Prometheus/Grafana instalada; não instalar Dynatrace pesado sem checar capacidade.
+
+## Checkpoint da sessão — 2026-11-07 21:25:22 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE     VERSION
+controlplane   Ready    control-plane   2d10h   v1.37.1
+node01         Ready    <none>          2d9h    v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           28s   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           28s   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           28s   web          busybox:1.36         app=sre-web,track=green
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP              NODE           NOMINATED NODE   READINESS GATES
+pod/drain-demo-89554557b-9gzww   1/1     Running   0          28s   192.168.1.249   node01         <none>           <none>
+pod/drain-demo-89554557b-sth9f   1/1     Running   0          28s   192.168.0.35    controlplane   <none>           <none>
+pod/web-blue-5c57468c74-f9b5s    1/1     Running   0          28s   192.168.1.189   node01         <none>           <none>
+pod/web-blue-5c57468c74-wbmpx    1/1     Running   0          28s   192.168.0.233   controlplane   <none>           <none>
+pod/web-green-6654db8d7b-sb2x9   1/1     Running   0          28s   192.168.1.64    node01         <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.99.195.151    <none>        80/TCP    28s   app=drain-demo
+service/sre-web         ClusterIP   10.108.29.249    <none>        80/TCP    28s   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.108.176.214   <none>        80/TCP    28s   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                     AGE
+drain-demo-fmc8p      IPv4          8080    192.168.0.35,192.168.1.249    28s
+sre-web-9rjdg         IPv4          8080    192.168.0.233,192.168.1.189   28s
+sre-web-green-9t59s   IPv4          8080    192.168.1.64                  28s
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
