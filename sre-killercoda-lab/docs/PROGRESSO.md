@@ -255,3 +255,18 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Na fila após recuperação: `messages_ready=0`, `messages_unacknowledged=0`.
 - Conclusão válida: a fila reteve a notificação durante a interrupção do consumidor e o consumo foi retomado após reinicialização; **não foi testada queda do broker, perda de persistência, nem mecanismo automático de autoscaling**.
 - Próxima aula: `labs/test-duplicatas.sh` publica exatamente duas mensagens de teste com `pagamento_id` igual, verifica dois `FORWARDED` e dois `ACK` e demonstra a ausência atual de deduplicação. **Script publicado, não executado ainda**.
+
+## Duplicidade comprovada — 07/11/2026 21:11 UTC
+- Script `test-duplicatas.sh` executado pelo usuário com sucesso. ID fictício `PAG-DUPLICADO-20261107T211130-9568`.
+- A bridge registrou **2 publicações** no RabbitMQ, Worker fez **2 ACKs** e **2 logs de NOTIFICATION_PROCESSED** para o mesmo ID: falta de idempotência reproduzida.
+- Na sequência, foi preparada correção **ainda não validada no cluster**: Worker registra pagamento_id em SQLite (`INSERT OR IGNORE` transacional), ACK para duplicatas sem repetir `NOTIFICATION_PROCESSED`.
+- `notification-worker-data`: PVC de 64Mi em `labs/notification-worker.yaml`. Para o lab, somente uma réplica do Worker; PVC protege a tabela em reinício do Pod enquanto a infraestrutura e o volume existirem, não quando toda a VM KillerCoda for destruída.
+- RabbitMQ: `restore-notification-worker.sh` instala política de dead-letter que roteia rejeições da fila `notificacoes-pagamentos` para `notificacoes-pagamentos-dlq` pela exchange padrão; worker declara a fila DLQ durável no início.
+- Próximos testes **pendentes de execução**, após `git pull --rebase origin main`:
+  ```bash
+  bash sre-killercoda-lab/labs/restore-notification-worker.sh
+  bash sre-killercoda-lab/labs/test-idempotencia.sh
+  bash sre-killercoda-lab/labs/test-dlq.sh
+  ```
+- Critério idempotência: 2 FORWARDED, 2 ACK, **1 NOTIFICATION_PROCESSED, 1 DUPLICATE_SKIPPED** para mesmo ID. Critério DLQ: fila aumenta após publicação de payload sem `pagamento_id`.
+- Limites: não oferece exactly-once transacional entre Kafka, RabbitMQ e efeitos externos; não há resiliência dos brokers `emptyDir`, TLS ou real capacidade de produção. Script antigo `test-duplicatas.sh` passa a ser **baseline histórica**, pois espera dois processamentos e deverá falhar após idempotência ativada.
