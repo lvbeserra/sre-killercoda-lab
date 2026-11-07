@@ -76,7 +76,16 @@ echo "=== INICIANDO APACHE, KAFKA E RABBITMQ ==="
 if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
   if bash labs/restore-middleware.sh; then
     echo "=== VALIDANDO MIDDLEWARE ==="
-    bash labs/validate-middleware.sh || echo "AVISO: middleware ainda nao validou; confira kubectl -n sre-middleware-lab get pods e logs."
+    if bash labs/validate-middleware.sh; then
+      echo "=== INICIANDO BRIDGE KAFKA -> RABBITMQ ==="
+      if [[ "${SRE_ENABLE_BRIDGE:-1}" == "1" ]]; then
+        bash labs/restore-payment-bridge.sh || echo "AVISO: bridge nao iniciou; consulte kubectl -n sre-middleware-lab logs deploy/payment-bridge"
+      else
+        echo "Bridge desativada por SRE_ENABLE_BRIDGE=0."
+      fi
+    else
+      echo "AVISO: middleware nao validou; ignorando bridge para nao bloquear o laboratorio."
+    fi
   else
     echo "AVISO: implantacao middleware com falha; laboratorio base e checkpoints continuam ativos."
   fi
