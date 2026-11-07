@@ -238,3 +238,10 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
   bash sre-killercoda-lab/labs/test-notification-worker.sh
   ```
 - Validação esperada: log `FORWARDED` na bridge e log `ACK` no worker para **mesmo ID**. Duplicatas ainda possíveis; storage RabbitMQ/Kafka efêmero; laboratório sem dados reais nem Dynatrace ativo.
+
+## Validação ponta a ponta e próximo experimento — 07/11/2026 21:05 UTC
+- O usuário executou `restore-notification-worker.sh`: `notification-worker` fez rollout com sucesso e logou `WORKER_READY`.
+- Ao iniciar, o worker consumiu e confirmou com `ACK` as notificações previamente acumuladas: `PAG-LAB-20261107T205423Z` e `PAG-BRIDGE-20261107T205921Z`.
+- `test-notification-worker.sh`: evento de teste `PAG-WORKER-20261107T210512-25693` publicado no Kafka; bridge logou `FORWARDED` em partição 0, offset 2, fila `notificacoes-pagamentos`; worker logou `ACK` para o **mesmo pagamento_id**. **Fluxo completo Kafka → bridge → RabbitMQ → worker validado por logs correlacionados.**
+- Exercício seguinte publicado no GitHub em `labs/test-resilience-worker.sh`: reduzir somente o worker a 0, publicar evento fictício, verificar acumulação/encaminhamento, restaurar worker e aguardar ACK. Contém trap para tentar restaurar a réplica também ao sair por erro. **Ainda NÃO foi executado**.
+- A arquitetura é *at-least-once*, com possibilidade de duplicatas e perda de dados quando o Pod do broker é substituído (Kafka/RabbitMQ usam `emptyDir`). Não é um sistema de pagamentos real; posteriormente abordar idempotência, DLQ, métricas e Dynatrace.
