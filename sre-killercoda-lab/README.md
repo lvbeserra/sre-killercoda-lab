@@ -8,25 +8,23 @@ KillerCoda gratuito encerra a sessão após cerca de **1 hora** e apaga o ambien
 
 ## Restaurar em um novo KillerCoda
 
-Abra o cenário **Kubernetes single node** e confira o contexto e nó. Faça clone de seu repositório GitHub e aplique:
+Abra o cenário **Kubernetes** do KillerCoda (um ou dois nós, conforme o cenário), confira o contexto e execute o bootstrap abaixo. O login via navegador deve ser autorizado manualmente a cada VM descartável:
 
 ```bash
-kubectl config current-context
-kubectl get nodes
-# Depois de publicar os arquivos no GitHub:
-git clone https://github.com/SEU_USUARIO/sre-killercoda-lab.git
+git clone https://github.com/lvbeserra/sre-killercoda-lab.git
 cd sre-killercoda-lab
-bash restore.sh
-bash validate.sh
+bash iniciar.sh
 ```
 
-Se o repositório for privado, faça clone somente com autenticação segura. Não cole tokens em um terminal do KillerCoda: o ambiente é temporário e suas sessões podem registrar comandos. Para um repositório público que contém **somente estes manifests de laboratório**, o clone HTTPS é suficiente.
+O comando `iniciar.sh` chama `sre-killercoda-lab/setup.sh`, instala `gh` quando ausente, pede autorização pelo navegador, configura o Git, executa `restore.sh` e `validate.sh` e ativa checkpoints de 50 minutos. O clone por si só não instala nem inicia nada. Se o repositório for privado, faça clone somente com autenticação segura. Não cole tokens em um terminal do KillerCoda: o ambiente é temporário e suas sessões podem registrar comandos. Para um repositório público que contém **somente estes manifests de laboratório**, o clone HTTPS é suficiente.
 
 **Sem GitHub ainda?** Extraia este pacote e leve os arquivos para seu repositório; se `restore.sh` já estiver presente na sessão, rode `bash restore.sh`.
 
 ## Conteúdo
 
 - `lab-completo.yaml`: namespaces; Blue (2 pods) e Green (1 pod); Service principal Blue e Service Green; ConfigMap Python de /ready e /slow; drain-demo (2 pods) com preStop 5s, SIGTERM, grace period 30s, maxUnavailable 0 e maxSurge 1; Service drain-demo.
+- `setup.sh` e `../iniciar.sh`: instalador e inicializador interativo para novas sessões.
+- `checkpoint.sh` e `start-checkpoints.sh`: fazem commit e push no GitHub dos arquivos permitidos e do progresso; exigem autenticação Git segura em cada VM.
 - `restore.sh`: aplica tudo, aguarda rollout e verifica saúde.
 - `validate.sh`: checa Service/DNS/HTTP, status de deployments e Cilium.
 - `labs/cpu-benchmark-opcional.yaml`: dois Jobs de CPU. Rode **um por vez** para não contaminar a comparação.
@@ -38,7 +36,7 @@ Se o repositório for privado, faça clone somente com autenticação segura. N�
 
 1. Atualize `docs/PROGRESSO.md` com *o que foi validado* e *o próximo comando*.
 2. Ajuste o `lab-completo.yaml` para refletir **o estado desejado da próxima sessão**. Se fizer um patch de Kubernetes apenas no terminal, também registre a alteração no YAML; senão ela desaparece quando o cluster é destruído.
-3. Faça commit/push ao GitHub no seu computador ou pela interface web. Na sessão seguinte, use `git clone`/`git pull`, `bash restore.sh` e `bash validate.sh`.
+3. O monitor tentará commit/push após começar e a cada 50 minutos. Confira `/tmp/sre-checkpoints.log`, pois erros de autenticação/rede ou divergência no branch podem deixar o commit apenas na VM. Na sessão seguinte, use `git clone` e `bash iniciar.sh`.
 
 ## Limitações importantes
 
