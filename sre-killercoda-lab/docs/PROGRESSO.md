@@ -343,3 +343,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Veredito do script: **WARNING: revisar filas e mensagens pendentes**. Aviso correto, devido à notificação inválida da aula anterior ainda retida na DLQ. Evidência mantida; não apagar automaticamente.
 - Próxima aula publicada no GitHub: `labs/test-sli-slo.sh`. Executa 20 consultas HTTP ao Apache e 20 ao Service /metrics do Worker a partir da bridge e calcula taxa de sucesso/p50/p95 da amostra. **Ainda não foi executado no cluster**.
 - Limitação: snapshot com 20 amostras não comprova SLO de disponibilidade mensal 99,9%, nem observa latências dos usuários reais ou tendências ao longo do tempo.
+
+## SLI sintético concluído — 07/11/2026 21:xx UTC
+- Usuário executou `labs/test-sli-slo.sh` após atualizar repositório; Apache e Worker saudáveis.
+- 20/20 HTTP OK no Apache (`availability_sample_percent=100.0`, p50=5.1ms, p95=8.8ms, 0 falhas).
+- 20/20 HTTP OK em `notification-worker-metrics:9100/metrics` (`availability_sample_percent=100.0`, p50=5.4ms, p95=7.1ms, 0 falhas).
+- São medições **sintéticas internas no cluster**, não comportamento de clientes externos, nem comprovação de SLO de 99,9% por 30 dias.
+- Exercício publicado mas ainda **não executado no KillerCoda**: `labs/test-error-budget.sh`; permite comparar proporção de falhas em uma amostra contra meta de SLO de requisições, e calcular budget equivalente em tempo (uma métrica diferente). Exemplos: `bash sre-killercoda-lab/labs/test-error-budget.sh 40 0` e `bash sre-killercoda-lab/labs/test-error-budget.sh 10000 15`.
+- Próximos passos: validar script, preparar coleta persistente e alertas de burn-rate com janelas temporais; Dynatrace ainda sem acesso/tokens configurados.
