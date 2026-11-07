@@ -139,3 +139,35 @@ sre-web-vkjpl         IPv4          8080    192.168.0.220,192.168.1.27   23m
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## Checkpoint da sessão — 2026-11-07 13:23:07 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE    VERSION
+controlplane   Ready    control-plane   2d2h   v1.37.1
+node01         Ready    <none>          2d1h   v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           28m   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           28m   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           28m   web          busybox:1.36         app=sre-web,track=green
+
+NAME                              READY   STATUS    RESTARTS   AGE   IP              NODE           NOMINATED NODE   READINESS GATES
+pod/drain-demo-5577f764d7-2ts7j   1/1     Running   0          25m   192.168.0.135   controlplane   <none>           <none>
+pod/drain-demo-5577f764d7-cr99v   1/1     Running   0          25m   192.168.1.99    node01         <none>           <none>
+pod/web-blue-5c57468c74-54lk4     1/1     Running   0          28m   192.168.0.220   controlplane   <none>           <none>
+pod/web-blue-5c57468c74-6htx6     1/1     Running   0          28m   192.168.1.27    node01         <none>           <none>
+pod/web-green-6654db8d7b-h4vfv    1/1     Running   0          28m   192.168.1.253   node01         <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.100.188.83    <none>        80/TCP    28m   app=drain-demo
+service/sre-web         ClusterIP   10.106.203.207   <none>        80/TCP    28m   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.101.145.199   <none>        80/TCP    28m   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                    AGE
+drain-demo-4g49z      IPv4          8080    192.168.1.99,192.168.0.135   28m
+sre-web-green-mpwqh   IPv4          8080    192.168.1.253                28m
+sre-web-vkjpl         IPv4          8080    192.168.0.220,192.168.1.27   28m
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
