@@ -48,6 +48,9 @@ spec:
                 secretKeyRef:
                   name: rabbitmq-auth
                   key: password
+          ports:
+            - name: metrics
+              containerPort: 9100
           readinessProbe:
             exec:
               command: ["/bin/sh", "-c", "test -f /tmp/notification-worker-ready"]
@@ -73,3 +76,19 @@ spec:
         - name: processed-data
           persistentVolumeClaim:
             claimName: notification-worker-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-worker-metrics
+  namespace: sre-middleware-lab
+  labels:
+    app: notification-worker
+spec:
+  selector:
+    app: notification-worker
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
