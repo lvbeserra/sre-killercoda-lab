@@ -1,4 +1,15 @@
 # Consumidor ficticio RabbitMQ: teste de ACK, sem integracoes financeiras reais.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: notification-worker-data
+  namespace: sre-middleware-lab
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 64Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,6 +40,8 @@ spec:
           env:
             - {name: RABBIT_HOST, value: rabbitmq}
             - {name: RABBIT_QUEUE, value: notificacoes-pagamentos}
+            - {name: RABBIT_DLQ, value: notificacoes-pagamentos-dlq}
+            - {name: DEDUP_DB_PATH, value: /data/processed.sqlite3}
             - {name: RABBIT_USER, value: labuser}
             - name: RABBIT_PASSWORD
               valueFrom:
@@ -51,7 +64,12 @@ spec:
             - name: source
               mountPath: /app
               readOnly: true
+            - name: processed-data
+              mountPath: /data
       volumes:
         - name: source
           configMap:
             name: notification-worker-code
+        - name: processed-data
+          persistentVolumeClaim:
+            claimName: notification-worker-data
