@@ -379,3 +379,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Imediatamente após o rollout, `labs/report-sre-observer.sh 5` retornou zero amostras para `apache_http` e `notification_metrics`; disponibilidade, P50/P95 e burn rate vieram nulos, `history_sufficient_for_window=false`. **Não inferir falha** sem verificar logs, pois relatório foi gerado ~4s após PVC criado.
 - Próximo diagnóstico pendente: `kubectl -n sre-middleware-lab get pods -l app=sre-observer`; `kubectl -n sre-middleware-lab logs deploy/sre-observer --tail=30`; `kubectl -n sre-middleware-lab exec deploy/sre-observer -- python /app/collector.py once`; `bash sre-killercoda-lab/labs/report-sre-observer.sh 5`.
 - Para validar uma janela de 5min com cobertura adequada, coletar por aproximadamente >=4min30; o relatório indica cobertura real. Nada disso representa um SLO externo mensal.
+
+## Histórico observado validado — 07/11/2026 21:45 UTC
+- `sre-observer` estava **1/1 Running, 0 restarts**, coletando a cada 30s e gravando no SQLite (`/data/observations.sqlite3`).
+- Logs: `SRE_OBSERVER_READY`, seguidos por `SYNTHETIC_SAMPLE` com `success=1` para `apache_http` e `notification_metrics`.
+- Após uma coleta manual, `report-sre-observer.sh 5` retornou 5/5 sucessos para cada serviço; cobertura observada de 96 segundos, `history_sufficient_for_window=false`.
+- Apache: P50=3,29ms, P95=142,59ms; métricas Worker: P50=2,22ms, P95=56,90ms. Burn rate da amostra 0x para ambos. Percentis muito sensíveis a outliers com somente 5 amostras.
+- **Nova aula publicada, ainda não executada**: `labs/test-observer-incident.sh` reduz **somente Apache** a zero replicas, coleta falha sintética, restaura Apache, coleta sucesso e apresenta histórico. Script tenta restaurar Apache em caso de erro. Não usar em produção.
+- Próximos comandos: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/test-observer-incident.sh`. O objetivo é validar registro da indisponibilidade, não um SLO mensal.
