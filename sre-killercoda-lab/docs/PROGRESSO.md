@@ -373,3 +373,9 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Próximo teste **ainda não executado no cluster**: `git pull --rebase origin main; bash sre-killercoda-lab/labs/restore-sre-observer.sh; bash sre-killercoda-lab/labs/report-sre-observer.sh 5`.
 - Nos primeiros minutos, `history_sufficient_for_window=false` é esperado; aguarde coletas suficientes para cobertura. Observações são internas: queda total do cluster não pode ser detectada por um coletor dentro do próprio cluster.
 - Limitações: PVC local-path só persiste enquanto VM/nó/storage durar; histórico não sobrevive à expiração do KillerCoda; SLO por requisições reais e alertas de burn-rate real continuam pendentes; Dynatrace não instalado.
+
+## Primeira implantação do observador histórico — 07/11/2026 21:44 UTC
+- Usuário executou `labs/restore-sre-observer.sh`: ConfigMap criado, PVC `sre-observer-data` **Bound** (64Mi, local-path), `deployment/sre-observer` com **rollout concluído**.
+- Imediatamente após o rollout, `labs/report-sre-observer.sh 5` retornou zero amostras para `apache_http` e `notification_metrics`; disponibilidade, P50/P95 e burn rate vieram nulos, `history_sufficient_for_window=false`. **Não inferir falha** sem verificar logs, pois relatório foi gerado ~4s após PVC criado.
+- Próximo diagnóstico pendente: `kubectl -n sre-middleware-lab get pods -l app=sre-observer`; `kubectl -n sre-middleware-lab logs deploy/sre-observer --tail=30`; `kubectl -n sre-middleware-lab exec deploy/sre-observer -- python /app/collector.py once`; `bash sre-killercoda-lab/labs/report-sre-observer.sh 5`.
+- Para validar uma janela de 5min com cobertura adequada, coletar por aproximadamente >=4min30; o relatório indica cobertura real. Nada disso representa um SLO externo mensal.
