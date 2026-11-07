@@ -68,7 +68,7 @@ rabbit_api -X PUT -H 'Content-Type: application/json' \
   --data '{"durable":false,"auto_delete":false,"arguments":{}}' \
   "$BASE/queues/%2F/$QUEUE" >/dev/null
 PUB_DATA=$(printf '{"properties":{},"routing_key":"%s","payload":"Notificacao LAB %s","payload_encoding":"string"}' "$QUEUE" "$PAYMENT_ID")
-ROUTED=$(rabbit_api -X PUT -H 'Content-Type: application/json' \
+ROUTED=$(rabbit_api -X POST -H 'Content-Type: application/json' \
   --data "$PUB_DATA" "$BASE/exchanges/%2F/amq.default/publish")
 printf '%s' "$ROUTED" | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r.get("routed") is True, "Mensagem não roteada"'
 RESULT=$(rabbit_api -X POST -H 'Content-Type: application/json' \
