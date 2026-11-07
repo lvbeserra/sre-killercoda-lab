@@ -27,3 +27,12 @@ git status -sb
 Um `git push` só está confirmado quando o log diz `SUCESSO: checkpoint publicado no GitHub.`. Se houver falha de rede, autenticação ou conflito Git, o checkpoint poderá ficar só na VM.
 
 Não envie credenciais, kubeconfig, Secrets ou tokens ao GitHub. O Metrics Server é opcional e não é instalado por padrão por exigir avaliação do TLS do kubelet neste lab.
+
+## Novo módulo: Apache + Kafka + RabbitMQ
+O `bash iniciar.sh` agora também implanta por padrão o namespace `sre-middleware-lab`: Apache HTTP Server, Kafka em KRaft standalone e RabbitMQ Management. A senha RabbitMQ é gerada no cluster e não é comitada. O projeto de eventos de pagamento é **simulado** (sem dados reais). Teste: `bash sre-killercoda-lab/labs/validate-middleware.sh`.
+
+Os limites de memória somados podem ultrapassar a capacidade de cenários KillerCoda pequenos. Para subir apenas o laboratório Blue/Green em máquinas limitadas: `SRE_ENABLE_MIDDLEWARE=0 bash iniciar.sh`. Os volumes de Kafka/RabbitMQ são `emptyDir`, não preservam filas/mensagens entre sessões.
+
+Existe alternativa `sre-killercoda-lab/labs/docker-compose.middleware.yaml` para ambientes Docker locais; use arquivo de ambiente local `sre-killercoda-lab/labs/.env.middleware` com `RABBITMQ_DEFAULT_USER=labuser` e `RABBITMQ_DEFAULT_PASS` forte. **Não versionar esse arquivo.**
+
+**Dynatrace:** instruções de integração opcional em [docs/DYNATRACE.md](sre-killercoda-lab/docs/DYNATRACE.md). Requer conta Dynatrace e credenciais por sessão; não é instalado nem monitora automaticamente por causa dos pré-requisitos, segurança e capacidade do cluster.
