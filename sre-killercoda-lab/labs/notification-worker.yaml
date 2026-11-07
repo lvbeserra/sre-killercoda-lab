@@ -1,0 +1,57 @@
+# Consumidor ficticio RabbitMQ: teste de ACK, sem integracoes financeiras reais.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-worker
+  namespace: sre-middleware-lab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: notification-worker
+  template:
+    metadata:
+      labels:
+        app: notification-worker
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: worker
+          image: python:3.12-slim
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt
+              exec python -u /app/worker.py
+          env:
+            - {name: RABBIT_HOST, value: rabbitmq}
+            - {name: RABBIT_QUEUE, value: notificacoes-pagamentos}
+            - {name: RABBIT_USER, value: labuser}
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-auth
+                  key: password
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "test -f /tmp/notification-worker-ready"]
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 20m
+              memory: 48Mi
+            limits:
+              cpu: 200m
+              memory: 192Mi
+          volumeMounts:
+            - name: source
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: source
+          configMap:
+            name: notification-worker-code
