@@ -167,14 +167,18 @@ spec:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef: {name: rabbitmq-auth, key: password}
+          # Probes TCP leves: o RabbitMQ já está pronto para aceitar conexões AMQP
+          # quando a porta 5672 abre. Evita custo/timeout do rabbitmq-diagnostics
+          # em clusters de treinamento com pouca CPU.
           startupProbe:
-            exec:
-              command: ["/bin/sh", "-c", "rabbitmq-diagnostics -q ping"]
+            tcpSocket: {port: amqp}
             periodSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 48
           readinessProbe:
             tcpSocket: {port: amqp}
             periodSeconds: 10
+            timeoutSeconds: 3
           resources:
             requests: {cpu: 100m, memory: 192Mi}
             limits: {cpu: 600m, memory: 768Mi}
