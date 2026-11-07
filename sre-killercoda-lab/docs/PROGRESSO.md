@@ -270,3 +270,19 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
   ```
 - Critério idempotência: 2 FORWARDED, 2 ACK, **1 NOTIFICATION_PROCESSED, 1 DUPLICATE_SKIPPED** para mesmo ID. Critério DLQ: fila aumenta após publicação de payload sem `pagamento_id`.
 - Limites: não oferece exactly-once transacional entre Kafka, RabbitMQ e efeitos externos; não há resiliência dos brokers `emptyDir`, TLS ou real capacidade de produção. Script antigo `test-duplicatas.sh` passa a ser **baseline histórica**, pois espera dois processamentos e deverá falhar após idempotência ativada.
+
+## Idempotência e DLQ validadas — 07/11/2026 21:17 UTC
+- PVC `notification-worker-data` criado e **Bound**, tamanho 64Mi, storageClass local-path.
+- Worker mostrou `DB_READY` com banco `/data/processed.sqlite3` e `WORKER_READY`.
+- `test-idempotencia.sh` para `PAG-IDEMP-20261107T211714-7627`: **FORWARDED=2, ACK=2, PROCESSED=1, DUPLICATE_SKIPPED=1**; dois eventos entregues, apenas um processamento simulado.
+- `test-dlq.sh` enviou evento fictício inválido sem `pagamento_id` e a fila `notificacoes-pagamentos-dlq` passou de **0 para 1** mensagem. Teste da política de dead-letter concluído.
+- Nova instrumentação publicada, **ainda NÃO validada no cluster**: `apps/notification-worker/metrics_server.py` expõe contadores Prometheus em `/metrics` porta 9100: `sre_notification_processed_total`, `duplicate_skipped_total`, `invalid_total`, `ack_total`, `db_error_total`, `reconnect_total`. Contadores são **por processo e reiniciam a cada restart**; não possuem ID do pagamento como label.
+- `labs/notification-worker.yaml` expõe Service interno `notification-worker-metrics:9100`. `restore-notification-worker.sh` inclui `metrics_server.py` no ConfigMap e reinicia o Worker. `checkpoint.sh` inclui este arquivo.
+- **Próxima ação pendente no KillerCoda**:
+  ```bash
+  cd ~/sre-killercoda-lab
+  git pull --rebase origin main
+  bash sre-killercoda-lab/labs/restore-notification-worker.sh
+  bash sre-killercoda-lab/labs/test-metrics.sh
+  ```
+- Recursos limitados: coletar `/metrics` antes de instalar Prometheus/Grafana completos, OpenTelemetry Collector ou Dynatrace. Este cenário não possui monitoramento Dynatrace ativo nem oferece persistência da VM KillerCoda.
