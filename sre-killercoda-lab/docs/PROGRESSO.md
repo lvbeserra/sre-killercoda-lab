@@ -326,3 +326,12 @@ sre-web-green-9t59s   IPv4          8080    192.168.1.64                  28s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## Métricas dinâmicas validadas — 07/11/2026 21:27 UTC
+- Usuário executou `bash sre-killercoda-lab/labs/test-metrics-live.sh` com sucesso.
+- Scrape antes: `processed=0 duplicate=0 ack=0 invalid=0`; após teste com idempotência e DLQ: **processed=1 duplicate=1 ack=2 invalid=1**.
+- ID fictício `PAG-IDEMP-20261107T212727-21325`: `FORWARDED=2 ACK=2 PROCESSED=1 DUPLICATE_SKIPPED=1`.
+- Mensagem inválida `INVALIDO-20261107T212738-29640` encaminhada para DLQ; filas `notificacoes-pagamentos-dlq` aumentaram de 0 para 1.
+- `http://notification-worker-metrics:9100/metrics` validado por requisição interna via Pod `payment-bridge`.
+- **Implementado e publicado, ainda não executado**: `labs/check-sre-alerts.sh`, checagem manual leve de replicas Ready, scrape dos contadores e filas RabbitMQ; retorna 0 OK / 1 WARNING / 2 CRITICAL. Como há 1 mensagem intencional na DLQ, o teste deve sinalizar WARNING até sua análise. Não substitui monitoramento contínuo ou alertas reais.
+- Próxima ação: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/check-sre-alerts.sh`. Depois projetar SLI/SLO e observabilidade durável em ambiente com recursos adequados.
