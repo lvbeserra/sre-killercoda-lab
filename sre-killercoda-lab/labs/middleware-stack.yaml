@@ -1,0 +1,187 @@
+# K8s SRE Middleware Lab — Apache HTTP + Kafka KRaft + RabbitMQ.
+# SOMENTE desenvolvimento: sem TLS, persistência ou alta disponibilidade.
+# Kafka e RabbitMQ são single-node e usam emptyDir (dados efêmeros).
+# RabbitMQ usa Secret gerado por labs/restore-middleware.sh; nunca comite credenciais.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sre-middleware-lab
+  labels:
+    app.kubernetes.io/part-of: sre-killercoda-lab
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apache-page
+  namespace: sre-middleware-lab
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="pt-br"><head><meta charset="utf-8"><title>SRE Middleware Lab</title></head>
+    <body><h1>SRE Middleware Lab</h1>
+    <p>Apache HTTP Server OK — Kubernetes / Kafka / RabbitMQ</p>
+    <p>Os eventos de pagamento neste lab sao SIMULADOS: nenhum pagamento real.</p>
+    </body></html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache
+  namespace: sre-middleware-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: apache}
+  template:
+    metadata:
+      labels: {app: apache}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: apache
+          image: httpd:2.4-alpine
+          ports:
+            - {name: http, containerPort: 80}
+          readinessProbe:
+            httpGet: {path: /, port: http}
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 10m, memory: 24Mi}
+            limits: {cpu: 150m, memory: 96Mi}
+          volumeMounts:
+            - {name: apache-page, mountPath: /usr/local/apache2/htdocs/index.html, subPath: index.html, readOnly: true}
+      volumes:
+        - name: apache-page
+          configMap: {name: apache-page}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache
+  namespace: sre-middleware-lab
+spec:
+  selector: {app: apache}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: sre-middleware-lab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: kafka}
+  template:
+    metadata:
+      labels: {app: kafka}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: kafka
+          image: apache/kafka:4.1.2
+          ports:
+            - {name: kafka, containerPort: 9092}
+            - {name: controller, containerPort: 9093}
+          env:
+            - {name: CLUSTER_ID, value: "4L6g3nShT-eMCtK--X86sw"}
+            - {name: KAFKA_NODE_ID, value: "1"}
+            - {name: KAFKA_PROCESS_ROLES, value: "broker,controller"}
+            - {name: KAFKA_LISTENERS, value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"}
+            - {name: KAFKA_ADVERTISED_LISTENERS, value: "PLAINTEXT://kafka.sre-middleware-lab.svc.cluster.local:9092"}
+            - {name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP, value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"}
+            - {name: KAFKA_INTER_BROKER_LISTENER_NAME, value: PLAINTEXT}
+            - {name: KAFKA_CONTROLLER_LISTENER_NAMES, value: CONTROLLER}
+            - {name: KAFKA_CONTROLLER_QUORUM_VOTERS, value: "1@localhost:9093"}
+            - {name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR, value: "1"}
+            - {name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR, value: "1"}
+            - {name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR, value: "1"}
+            - {name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS, value: "0"}
+            - {name: KAFKA_AUTO_CREATE_TOPICS_ENABLE, value: "false"}
+            - {name: KAFKA_LOG_DIRS, value: /tmp/kraft-combined-logs}
+            - {name: KAFKA_HEAP_OPTS, value: "-Xms256m -Xmx512m"}
+          startupProbe:
+            tcpSocket: {port: kafka}
+            periodSeconds: 5
+            failureThreshold: 48
+          readinessProbe:
+            tcpSocket: {port: kafka}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 200m, memory: 512Mi}
+            limits: {cpu: "1", memory: 1280Mi}
+          volumeMounts:
+            - {name: kafka-data, mountPath: /tmp/kraft-combined-logs}
+      volumes:
+        - name: kafka-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: sre-middleware-lab
+spec:
+  selector: {app: kafka}
+  ports:
+    - {name: kafka, port: 9092, targetPort: kafka}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: sre-middleware-lab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: rabbitmq}
+  template:
+    metadata:
+      labels: {app: rabbitmq}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:4.1-management
+          ports:
+            - {name: amqp, containerPort: 5672}
+            - {name: management, containerPort: 15672}
+          env:
+            - {name: RABBITMQ_DEFAULT_USER, value: labuser}
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef: {name: rabbitmq-auth, key: password}
+            - {name: RABBITMQ_VM_MEMORY_HIGH_WATERMARK, value: "0.5"}
+          startupProbe:
+            exec:
+              command: ["/bin/sh", "-c", "rabbitmq-diagnostics -q ping"]
+            periodSeconds: 5
+            failureThreshold: 48
+          readinessProbe:
+            tcpSocket: {port: amqp}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 600m, memory: 768Mi}
+          volumeMounts:
+            - {name: rabbit-data, mountPath: /var/lib/rabbitmq}
+      volumes:
+        - name: rabbit-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: sre-middleware-lab
+spec:
+  selector: {app: rabbitmq}
+  ports:
+    - {name: amqp, port: 5672, targetPort: amqp}
+    - {name: management, port: 15672, targetPort: management}
