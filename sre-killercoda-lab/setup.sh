@@ -65,8 +65,20 @@ git config --local user.email "126087437+lvbeserra@users.noreply.github.com"
 echo "=== RESTAURANDO LABORATORIO ==="
 bash restore.sh
 
+echo "=== INICIANDO APACHE, KAFKA E RABBITMQ ==="
+# Desative num cenário com pouca memória usando SRE_ENABLE_MIDDLEWARE=0.
+if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
+  bash labs/restore-middleware.sh
+else
+  echo "Middleware desativado por SRE_ENABLE_MIDDLEWARE=0."
+fi
+
 echo "=== VALIDANDO LABORATORIO ==="
 bash validate.sh
+if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
+  echo "=== VALIDANDO MIDDLEWARE ==="
+  bash labs/validate-middleware.sh || echo "AVISO: middleware ainda nao validou; confira kubectl -n sre-middleware-lab get pods e logs."
+fi
 
 echo "=== INICIANDO CHECKPOINTS ==="
 bash start-checkpoints.sh
