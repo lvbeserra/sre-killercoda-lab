@@ -387,3 +387,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Apache: P50=3,29ms, P95=142,59ms; métricas Worker: P50=2,22ms, P95=56,90ms. Burn rate da amostra 0x para ambos. Percentis muito sensíveis a outliers com somente 5 amostras.
 - **Nova aula publicada, ainda não executada**: `labs/test-observer-incident.sh` reduz **somente Apache** a zero replicas, coleta falha sintética, restaura Apache, coleta sucesso e apresenta histórico. Script tenta restaurar Apache em caso de erro. Não usar em produção.
 - Próximos comandos: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/test-observer-incident.sh`. O objetivo é validar registro da indisponibilidade, não um SLO mensal.
+
+## Incidente sintético Apache com recuperação confirmada — 07/11/2026 21:48 UTC
+- `labs/test-observer-incident.sh` executado pelo usuário: Apache reduzido para 0 réplicas, observador registrou `success=0` e erro `No route to host`; após restaurar para 1 réplica, novo scrape `success=1`, latência 103,87 ms.
+- `notification_metrics` continuou com sucesso ao longo do teste, confirmando que a indisponibilidade foi restrita ao Apache nessa observação.
+- Relatório histórico de 5 minutos após incidente: Apache **13 amostras, 11 sucessos, 2 falhas, disponibilidade amostral 84,615%, P50 3,44ms, P95 142,59ms, burn amostral 153,85x**.
+- Endpoint `notification_metrics`: **13 amostras, 13 sucessos, 0 falhas, 100% de sucesso, P50 2,22ms, P95 56,90ms, burn 0x**.
+- Cobertura da janela: 276 segundos, `history_sufficient_for_window=true` conforme critério didático de 90% do período. É um histórico de **probes internos**, não SLI de usuários, nem prova de infra disponível durante queda completa do cluster.
+- Novo script **publicado mas ainda não executado**: `labs/check-observed-burn-rate.sh` calcula burn de 5min/1h/30min/6h usando amostras armazenadas em SQLite, exige cobertura temporal e volume mínimo por janela e devolve `INSUFFICIENT_HISTORY_FOR_PAGING` quando falta histórico de janelas longas. Não envia paging.
+- Próxima execução: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh`; verificar cobertura antes de inferir alerta.
