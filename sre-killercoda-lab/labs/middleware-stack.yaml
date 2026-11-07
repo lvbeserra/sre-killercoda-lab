@@ -130,6 +130,16 @@ spec:
   ports:
     - {name: kafka, port: 9092, targetPort: kafka}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-settings
+  namespace: sre-middleware-lab
+data:
+  rabbitmq.conf: |
+    # Container de laboratório com limite de 768Mi.
+    vm_memory_high_watermark.absolute = 384Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -157,7 +167,6 @@ spec:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef: {name: rabbitmq-auth, key: password}
-            - {name: RABBITMQ_VM_MEMORY_HIGH_WATERMARK, value: "0.5"}
           startupProbe:
             exec:
               command: ["/bin/sh", "-c", "rabbitmq-diagnostics -q ping"]
@@ -171,9 +180,13 @@ spec:
             limits: {cpu: 600m, memory: 768Mi}
           volumeMounts:
             - {name: rabbit-data, mountPath: /var/lib/rabbitmq}
+            - {name: rabbit-settings, mountPath: /etc/rabbitmq/rabbitmq.conf, subPath: rabbitmq.conf, readOnly: true}
       volumes:
         - name: rabbit-data
           emptyDir: {}
+        - name: rabbit-settings
+          configMap:
+            name: rabbitmq-settings
 ---
 apiVersion: v1
 kind: Service
