@@ -224,3 +224,17 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Inicializador `setup.sh` atualizado para implantar bridge quando middleware estiver saudável e `SRE_ENABLE_BRIDGE` não for `0`. Checkpoint versiona também arquivos de código da bridge.
 - **PENDENTE de validação na sessão Kubernetes:** `git pull --ff-only origin main`, `bash sre-killercoda-lab/labs/restore-payment-bridge.sh` e `bash sre-killercoda-lab/labs/test-bridge.sh`.
 - Sem garantia de exatamente uma entrega: em falhas pode haver duplicação; produção exige idempotência, DLQ, persistência, TLS, segurança e contratos.
+
+## Checkpoint de integração — 07/11/2026 20:59 UTC
+- Usuário executou `bash sre-killercoda-lab/labs/restore-payment-bridge.sh` com sucesso; Deployment `payment-bridge` completou rollout.
+- `test-bridge.sh` publicou `PAG-BRIDGE-20261107T205921Z` em Kafka e obteve log JSON `FORWARDED`: `kafka_partition=0`, `kafka_offset=1`, `rabbit_queue=notificacoes-pagamentos`.
+- Confirmado **Kafka -> Python bridge -> RabbitMQ** com publicação confirmada e commit de offset Kafka. **Ainda não foi testado consumo final/ACK**, nem semântica exactly-once.
+- Preparado novo `notification-worker` Python com ACK manual após simular processamento, logs estruturados e readiness baseada em conexão RabbitMQ. Manifesto e scripts recuperáveis via `iniciar.sh`.
+- **Próximo teste pendente no cluster**:
+  ```bash
+  cd ~/sre-killercoda-lab
+  git pull --rebase origin main
+  bash sre-killercoda-lab/labs/restore-notification-worker.sh
+  bash sre-killercoda-lab/labs/test-notification-worker.sh
+  ```
+- Validação esperada: log `FORWARDED` na bridge e log `ACK` no worker para **mesmo ID**. Duplicatas ainda possíveis; storage RabbitMQ/Kafka efêmero; laboratório sem dados reais nem Dynatrace ativo.
