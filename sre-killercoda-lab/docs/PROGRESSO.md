@@ -351,3 +351,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - São medições **sintéticas internas no cluster**, não comportamento de clientes externos, nem comprovação de SLO de 99,9% por 30 dias.
 - Exercício publicado mas ainda **não executado no KillerCoda**: `labs/test-error-budget.sh`; permite comparar proporção de falhas em uma amostra contra meta de SLO de requisições, e calcular budget equivalente em tempo (uma métrica diferente). Exemplos: `bash sre-killercoda-lab/labs/test-error-budget.sh 40 0` e `bash sre-killercoda-lab/labs/test-error-budget.sh 10000 15`.
 - Próximos passos: validar script, preparar coleta persistente e alertas de burn-rate com janelas temporais; Dynatrace ainda sem acesso/tokens configurados.
+
+## Exercício Error Budget validado — 07/11/2026 (saída fornecida no terminal)
+- Script `labs/test-error-budget.sh 40 0`: 40 requisições, 0 falhas, SLI da **amostra** 100%, budget proporcional 0,040 falhas, burn rate 0x.
+- Script `labs/test-error-budget.sh 10000 15`: 10.000 requisições, 15 falhas, SLI da **amostra** 99,85%, budget proporcional 10 falhas, burn rate 1,5x; cenário acima do budget proporcional em 5 falhas, sem evidência de violação de um SLO real de 30 dias.
+- Para uma meta **baseada em tempo** de 99,9% em 30 dias, referência equivalente é 43min12s de indisponibilidade; é uma medida alternativa, não intercambiável com o SLI por requisições.
+- Publicado `labs/test-multiwindow-burn-rate.sh` para simular três cenários de alertas multiwindow seguindo o Google SRE Workbook: PAGE_FAST 14,4x simultaneamente em 1h e 5m; PAGE_SUSTAINED 6x em 6h e 30m. **Script novo ainda não executado no KillerCoda**. Os números são amostras FICTÍCIAS, não capturas de histórico do cluster.
+- Próximo comando: `git pull --rebase origin main; bash sre-killercoda-lab/labs/test-multiwindow-burn-rate.sh`.
+- Referência de projeto: https://sre.google/workbook/alerting-on-slos/ . Regras operacionais reais exigem coleta contínua e definições corretas do que constitui uma falha do usuário.
