@@ -171,3 +171,10 @@ Repositório: https://github.com/lvbeserra/sre-killercoda-lab
 Progresso: https://github.com/lvbeserra/sre-killercoda-lab/blob/main/sre-killercoda-lab/docs/PROGRESSO.md
 Google SRE Workbook: https://sre.google/workbook/alerting-on-slos/
 Dynatrace Kubernetes: https://docs.dynatrace.com/docs/ingest-from/setup-on-k8s
+
+## Nova expansão — Infraestrutura Sênior Híbrida (baseada na vaga)
+Além de SRE/Kubernetes, o curso passa a cobrir conceitualmente servidores Windows/AD, VMware/Hyper-V, SAN/NAS/backup, rede/VPN/VLAN/firewall/LB, Azure/AWS/GCP, Terraform/Ansible/ARM/CloudFormation, monitoramento corporativo, segurança/compliance, FinOps e migrações. Existe auditoria read-only Kubernetes e inventário Windows em PowerShell para iniciar os exercícios. **Os demais módulos continuam planejados e não são funcionalidades já implantadas**.
+
+O documento de escopo completo é [TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md](TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md), e a prática de fala para reuniões e entrevistas está em [ENTREVISTA-INFRA-SENIOR.md](ENTREVISTA-INFRA-SENIOR.md).
+
+Para gestores, apresentar esta expansão como **piloto de capacitação, padronização e validação de operações híbridas**, não como plataforma de produção nem como evidência de que todos os produtos citados já estão integrados.
