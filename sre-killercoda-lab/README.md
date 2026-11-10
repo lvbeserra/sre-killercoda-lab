@@ -54,3 +54,15 @@ kubectl delete namespace sre-release-lab sre-cpu-lab
 ```
 
 **Atenção:** isso apaga todos os recursos nesses namespaces, inclusive recursos adicionais que você tenha criado.
+
+## Módulo opcional — Infraestrutura Sênior Híbrida
+Com base na vaga Hidrovias do Brasil, foram incluídos planejamento de infraestrutura híbrida, redes, storage/backup, cloud AWS/Azure/GCP, IaC e automação, segurança, governança, observabilidade e FinOps, além de treinamento oral para entrevistas.
+O módulo é **manual** e não adiciona workloads ao Kubernetes automaticamente.
+
+- [Matriz e plano de aprendizagem](docs/TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md)
+- [Guia de execução do módulo](labs/infra-senior/README.md)
+- [Roteiro de entrevista técnica](docs/ENTREVISTA-INFRA-SENIOR.md)
+
+Primeira tarefa opcional no KillerCoda: `python3 labs/infra-senior/audit-k8s.py`.
+No Windows autorizado, usar `labs/infra-senior/inventario-windows.ps1`.
+Ambos são diagnósticos read-only e **ainda não foram testados em ambiente do usuário**.
