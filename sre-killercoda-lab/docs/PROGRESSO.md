@@ -396,3 +396,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Cobertura da janela: 276 segundos, `history_sufficient_for_window=true` conforme critério didático de 90% do período. É um histórico de **probes internos**, não SLI de usuários, nem prova de infra disponível durante queda completa do cluster.
 - Novo script **publicado mas ainda não executado**: `labs/check-observed-burn-rate.sh` calcula burn de 5min/1h/30min/6h usando amostras armazenadas em SQLite, exige cobertura temporal e volume mínimo por janela e devolve `INSUFFICIENT_HISTORY_FOR_PAGING` quando falta histórico de janelas longas. Não envia paging.
 - Próxima execução: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh`; verificar cobertura antes de inferir alerta.
+
+## Nova trilha publicada — Infraestrutura Sênior Híbrida (10/11/2026)
+- Fonte: duas imagens da vaga **Analista de Infraestrutura Sênior — Hidrovias do Brasil**.
+- Escopo incorporado ao curso: on-prem/cloud, Azure/AWS/GCP, Hyper-V/VMware, SAN/NAS/backup, redes/VPN/VLAN/firewall/LB, IaC (Terraform/Ansible/ARM/CloudFormation), PowerShell/Bash/Python, monitoração/observabilidade, compliance, FinOps e migração.
+- Publicados os documentos `docs/TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md`, `docs/ENTREVISTA-INFRA-SENIOR.md` e `labs/infra-senior/README.md`.
+- Publicado **novo código opcional, ainda não testado no cluster**: `labs/infra-senior/audit-k8s.py` (read-only, report de Deployments/nodes/PVC/rede/requests e limites) e `labs/infra-senior/inventario-windows.ps1` (read-only em Windows autorizado; não executa no KillerCoda Linux).
+- Esses scripts são manuais e não foram adicionados à restauração automática para preservar recursos. Nenhuma conta cloud, storage remoto, VMware, Dynatrace ou ferramenta IaC adicional foi provisionada.
+- Próxima sessão: restaurar o cluster com `bash iniciar.sh`, conferir Pods, executar primeiro `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh` (ainda pendente da aula anterior) e depois `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py`.
+- Comunicação: começar com respostas orais de 15-30 segundos (contexto, ação, evidência) e não confundir provas de conceito com histórico de produção.
