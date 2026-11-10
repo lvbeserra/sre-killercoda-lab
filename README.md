@@ -36,3 +36,17 @@ Os limites de memória somados podem ultrapassar a capacidade de cenários Kille
 Existe alternativa `sre-killercoda-lab/labs/docker-compose.middleware.yaml` para ambientes Docker locais; use arquivo de ambiente local `sre-killercoda-lab/labs/.env.middleware` com `RABBITMQ_DEFAULT_USER=labuser` e `RABBITMQ_DEFAULT_PASS` forte. **Não versionar esse arquivo.**
 
 **Dynatrace:** instruções de integração opcional em [docs/DYNATRACE.md](sre-killercoda-lab/docs/DYNATRACE.md). Requer conta Dynatrace e credenciais por sessão; não é instalado nem monitora automaticamente por causa dos pré-requisitos, segurança e capacidade do cluster.
+
+## Trilha Infraestrutura Sênior Híbrida (nova)
+Os requisitos da vaga de Analista de Infraestrutura Sênior (Hidrovias do Brasil) foram incorporados à trilha de estudos, com módulos de Windows/AD/Hyper-V, cloud AWS/Azure/GCP, IaC, redes, storage/backup, observabilidade, segurança, FinOps e migração.
+A expansão é **opcional e sob demanda**; não implanta automaticamente ambientes Windows/cloud nem gera cobranças.
+
+- [Plano completo e matriz da vaga](sre-killercoda-lab/docs/TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md)
+- [Primeiros diagnósticos read-only Kubernetes/Windows](sre-killercoda-lab/labs/infra-senior/README.md)
+- [Treino de explicação técnica para entrevistas](sre-killercoda-lab/docs/ENTREVISTA-INFRA-SENIOR.md)
+
+Na próxima sessão KillerCoda, depois de restaurar o ambiente e validar o burn rate observado:
+```bash
+python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py
+```
+O script e a coleta PowerShell ainda aguardam execução/validação prática pelo usuário.
