@@ -437,3 +437,10 @@ sre-web-xzsw4         IPv4          8080    192.168.1.198,192.168.0.225   32s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## Restauração KillerCoda e teste end-to-end — 11/11/2026
+- Ambiente restaurado de `git clone` e `bash iniciar.sh` no Kubernetes `v1.37.1`, nós `controlplane` e `node01` Ready. O primeiro bootstrap foi interrompido por erro externo de espelho Mozilla no `apt-get update`, antes do deploy; após o ajuste de instalação, a restauração foi concluída no cluster.
+- `kubectl -n sre-middleware-lab get pods -o wide` registrou seis Pods `1/1 Running`, `RESTARTS=0`: Apache, Kafka, RabbitMQ e Payment Bridge no `node01`; Notification Worker e SRE Observer em `controlplane`.
+- `bash sre-killercoda-lab/labs/test-notification-worker.sh` **passou no novo cluster**; ID fictício `PAG-WORKER-20261111T113533-25778`; evento `FORWARDED` via Kafka partição 0 offset 0 para `notificacoes-pagamentos`, seguido por `ACK` do Worker para o mesmo ID.
+- Evidência comprova roteamento e ACK do fluxo Kafka → Bridge → RabbitMQ → Worker nesta sessão, mas não revalida por si só idempotência, DLQ, resiliência ou SLO mensal.
+- **Próximo passo ainda pendente**: executar `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh`; as janelas de 1h e 6h estarão insuficientes em sessão recente. Depois: `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py` para o módulo de Infraestrutura Sênior.
