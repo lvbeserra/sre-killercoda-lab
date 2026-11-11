@@ -444,3 +444,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - `bash sre-killercoda-lab/labs/test-notification-worker.sh` **passou no novo cluster**; ID fictício `PAG-WORKER-20261111T113533-25778`; evento `FORWARDED` via Kafka partição 0 offset 0 para `notificacoes-pagamentos`, seguido por `ACK` do Worker para o mesmo ID.
 - Evidência comprova roteamento e ACK do fluxo Kafka → Bridge → RabbitMQ → Worker nesta sessão, mas não revalida por si só idempotência, DLQ, resiliência ou SLO mensal.
 - **Próximo passo ainda pendente**: executar `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh`; as janelas de 1h e 6h estarão insuficientes em sessão recente. Depois: `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py` para o módulo de Infraestrutura Sênior.
+
+## Burn rate observado validado — 11/11/2026 (nova sessão KillerCoda)
+- O teste de fluxo `bash sre-killercoda-lab/labs/test-notification-worker.sh` foi aprovado novamente com pagamento **fictício** `PAG-WORKER-20261111T113533-25778`: Bridge `FORWARDED` Kafka partição 0, offset 0; Worker confirmou `ACK` para mesmo ID. Não demonstra efeitos externos nem transações financeiras reais.
+- Após `git pull --rebase origin main`, `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh` executado com sucesso; `deployment/sre-observer` fez rollout/status com sucesso.
+- Tanto `apache_http` quanto `notification_metrics`: **10 amostras em 5min, 0 falhas, 270s de cobertura, última amostra com 16s, burn rate 0x; window_covered=true**.
+- Janelas `30m`, `1h` e `6h` têm apenas 10 amostras e 270s de cobertura, portanto `window_covered=false`.
+- Regras `PAGE_FAST` e `PAGE_SUSTAINED` ficaram **não avaliadas** (não confundindo com alerta validamente não disparado); veredito **INSUFFICIENT_HISTORY_FOR_PAGING**. Esse resultado é correto para um laboratório recém-reconstruído e impede decisões baseadas em dados incompletos.
+- Monitoração de endpoints internos; não representa SLO externo/usuários reais nem detecção de queda completa do cluster. Não houve acionamento remoto de paging.
+- Próxima atividade **ainda não executada**: `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py` — inventário read-only de nós, deployments, Pods, PVCs, NetworkPolicies e reservas de CPU/memória. Interpretar requests/limits como declaração, não consumo medido.
