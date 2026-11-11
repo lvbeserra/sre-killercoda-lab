@@ -50,3 +50,18 @@ Na próxima sessão KillerCoda, depois de restaurar o ambiente e validar o burn 
 python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py
 ```
 O script e a coleta PowerShell ainda aguardam execução/validação prática pelo usuário.
+
+
+## Nova trilha: Azure Site Recovery, AD híbrido, Microsoft 365 e DevOps (11/11/2026)
+
+Requisitos de novas vagas incorporados ao curso. Priorização: Azure Site Recovery/DR, RPO-RTO, Recovery Plans, failover/failback; Windows Server/AD/Entra; M365; Azure Backup, rede, Hyper-V/VMware/Proxmox, IaC Terraform, CI/CD, segurança e observabilidade.
+
+- [Roteiro completo, cronograma e matriz](sre-killercoda-lab/docs/TRILHA-DR-ASR-AD-M365-DEVOPS.md)
+- [Módulo Azure Site Recovery e BCDR](sre-killercoda-lab/labs/dr-azure/README.md)
+
+**Primeiro laboratório de DR (somente simulação offline, sem Azure ou VM real):**
+```bash
+python3 sre-killercoda-lab/labs/dr-azure/simular-dr.py
+```
+
+O código foi publicado, porém não foi executado pelo usuário no KillerCoda. Nenhum recurso Azure foi provisionado; nenhuma VM replicada. O novo módulo não altera o bootstrap padrão.
