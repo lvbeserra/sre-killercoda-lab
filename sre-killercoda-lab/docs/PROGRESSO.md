@@ -453,3 +453,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Regras `PAGE_FAST` e `PAGE_SUSTAINED` ficaram **não avaliadas** (não confundindo com alerta validamente não disparado); veredito **INSUFFICIENT_HISTORY_FOR_PAGING**. Esse resultado é correto para um laboratório recém-reconstruído e impede decisões baseadas em dados incompletos.
 - Monitoração de endpoints internos; não representa SLO externo/usuários reais nem detecção de queda completa do cluster. Não houve acionamento remoto de paging.
 - Próxima atividade **ainda não executada**: `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py` — inventário read-only de nós, deployments, Pods, PVCs, NetworkPolicies e reservas de CPU/memória. Interpretar requests/limits como declaração, não consumo medido.
+
+## Diagnóstico de infraestrutura sênior — Kubernetes — 11/11/2026
+- Usuário executou com sucesso `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py` no novo KillerCoda.
+- Inventário: **2 nodes, 23 pods, 12 deployments, 10 services, 2 PVCs Bound, 0 objetos NetworkPolicy padrão**. 23 Pods em fase Running; nenhum Deployment com menos réplicas Ready do que solicitado.
+- `controlplane`: 14 Pods; CPU requests 295m/1000m (29,5%), memória requests 328/2146Mi (15,3%); soma de limites memória 852Mi.
+- `node01`: 9 Pods; CPU requests 400m/1000m (40%), memória requests 856/1803Mi (47,5%); soma de limites memória 2656Mi, cerca de **147,3%** da memória allocatable. Isso indica overcommit de *limites*, NÃO uso real >capacidade nem OOM comprovado.
+- Lacunas no cluster: **4 containers** com requests CPU/mem incompletos; **10 containers** sem limite de memória. É necessário identificar se pertencem a aplicações de laboratório ou componentes de plataforma antes de alterar algo.
+- NetworkPolicies Kubernetes padrão zero; falta de recursos NetworkPolicy por si só não comprova ausência de CiliumNetworkPolicy/controles externos. Nenhuma alteração de configuração realizada.
+- **Publicado, pendente de execução**: `labs/infra-senior/diagnostico-recursos.py` detalha por Pod/container as lacunas e tenta consultar `kubectl top` para verificar consumo real, tratando ausência de Metrics Server. Próximo: `git pull --rebase origin main` e `python3 sre-killercoda-lab/labs/infra-senior/diagnostico-recursos.py`.
+- Treino oral: "Inventariei a saúde do cluster e comparei requests com capacidade alocável. Identifiquei overcommit de limites no node01 e configurações incompletas. Antes de recomendar ajustes, verificaria uso real e impacto por workload." Sem confundir requests com consumo.
