@@ -51,3 +51,14 @@ Exemplo:
 ## Links
 - [Roteiro completo de estudos](../../docs/TRILHA-INFRAESTRUTURA-SENIOR-HIBRIDA.md)
 - [Treino de entrevistas](../../docs/ENTREVISTA-INFRA-SENIOR.md)
+
+## Aula 1 concluída — diagnóstico de capacidade (11/11/2026)
+Auditoria `audit-k8s.py` já executada: 2 nós, 23 Pods Running, 12 Deployments sem déficit de Ready, 2 PVC Bound; o node01 possui requests de memória 47,5% do allocatable, mas soma dos limites de memória 147,3% do allocatable. Quatro containers possuem requests incompletos e dez não possuem memory limit; não mudar configurações sem identificar workloads. NetworkPolicies padrão zero não garante ausência de políticas Cilium.
+
+**Próximo exercício — script publicado, ainda não executado:**
+
+    cd ~/sre-killercoda-lab
+    git pull --rebase origin main
+    python3 sre-killercoda-lab/labs/infra-senior/diagnostico-recursos.py
+
+O script lista os containers problemáticos e tenta obter consumo instantâneo com `kubectl top`. Caso Metrics Server esteja ausente, relata a ausência em vez de inventar dados de uso.
