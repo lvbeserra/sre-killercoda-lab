@@ -139,3 +139,12 @@ Treinar primeiro sozinho, depois com perguntas previsíveis e finalmente com ent
 - [Histórico de testes](PROGRESSO.md)
 - [Apresentação para gestores](APRESENTACAO-GESTORES-E-GUIA-ESTUDO.md)
 - [Readme do módulo](../labs/infra-senior/README.md)
+
+
+## Extensão prioritária — Azure Site Recovery, AD híbrido, M365 e CI/CD
+
+Foram adicionados requisitos de continuidade de serviços e Azure Site Recovery (ASR): Azure Backup, Recovery Services vault, replicação de VMware/Hyper-V/físicos, A2A, Recovery Plans, Test/Planned/Unplanned Failover, Failback, RPO/RTO, Azure Monitor/Log Analytics, VPN/ExpressRoute, Entra ID, RBAC, runbooks PowerShell/CLI, ITIL4, Terraform/CI-CD; além de Windows Server 2016/2019/2022, AD DS, Connect Sync/Cloud Sync, Microsoft 365, MFA/Conditional Access, endpoints Windows 10/11 e Proxmox.
+
+- [Plano completo e escopo das novas vagas](TRILHA-DR-ASR-AD-M365-DEVOPS.md).
+- [Módulo DR offline e roteiro para ASR real](../labs/dr-azure/README.md).
+- O simulador DR é conceitual, **não** Azure Site Recovery real; a futura fase com cloud exigirá assinatura sandbox, acesso e aprovação de custos.
