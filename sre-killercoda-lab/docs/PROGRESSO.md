@@ -405,3 +405,35 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Esses scripts são manuais e não foram adicionados à restauração automática para preservar recursos. Nenhuma conta cloud, storage remoto, VMware, Dynatrace ou ferramenta IaC adicional foi provisionada.
 - Próxima sessão: restaurar o cluster com `bash iniciar.sh`, conferir Pods, executar primeiro `bash sre-killercoda-lab/labs/check-observed-burn-rate.sh` (ainda pendente da aula anterior) e depois `python3 sre-killercoda-lab/labs/infra-senior/audit-k8s.py`.
 - Comunicação: começar com respostas orais de 15-30 segundos (contexto, ação, evidência) e não confundir provas de conceito com histórico de produção.
+
+## Checkpoint da sessão — 2026-11-11 11:30:42 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE     VERSION
+controlplane   Ready    control-plane   6d      v1.37.1
+node01         Ready    <none>          5d23h   v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           32s   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           32s   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           32s   web          busybox:1.36         app=sre-web,track=green
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP              NODE           NOMINATED NODE   READINESS GATES
+pod/drain-demo-89554557b-hzzsw   1/1     Running   0          32s   192.168.1.139   node01         <none>           <none>
+pod/drain-demo-89554557b-xt8nj   1/1     Running   0          31s   192.168.0.169   controlplane   <none>           <none>
+pod/web-blue-5c57468c74-98td8    1/1     Running   0          32s   192.168.1.198   node01         <none>           <none>
+pod/web-blue-5c57468c74-ctjbg    1/1     Running   0          32s   192.168.0.225   controlplane   <none>           <none>
+pod/web-green-6654db8d7b-k6df8   1/1     Running   0          32s   192.168.1.225   node01         <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.105.164.87    <none>        80/TCP    32s   app=drain-demo
+service/sre-web         ClusterIP   10.110.164.200   <none>        80/TCP    32s   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.101.110.93    <none>        80/TCP    32s   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                     AGE
+drain-demo-m2mql      IPv4          8080    192.168.1.139,192.168.0.169   31s
+sre-web-green-8whx6   IPv4          8080    192.168.1.225                 32s
+sre-web-xzsw4         IPv4          8080    192.168.1.198,192.168.0.225   32s
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
