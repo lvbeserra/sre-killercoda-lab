@@ -463,3 +463,14 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - NetworkPolicies Kubernetes padrão zero; falta de recursos NetworkPolicy por si só não comprova ausência de CiliumNetworkPolicy/controles externos. Nenhuma alteração de configuração realizada.
 - **Publicado, pendente de execução**: `labs/infra-senior/diagnostico-recursos.py` detalha por Pod/container as lacunas e tenta consultar `kubectl top` para verificar consumo real, tratando ausência de Metrics Server. Próximo: `git pull --rebase origin main` e `python3 sre-killercoda-lab/labs/infra-senior/diagnostico-recursos.py`.
 - Treino oral: "Inventariei a saúde do cluster e comparei requests com capacidade alocável. Identifiquei overcommit de limites no node01 e configurações incompletas. Antes de recomendar ajustes, verificaria uso real e impacto por workload." Sem confundir requests com consumo.
+
+
+## Novo módulo de vagas — ASR/DR + Infraestrutura híbrida Microsoft — 11/11/2026
+
+- Usuário forneceu requisitos completos para **Azure Site Recovery, Azure Backup, Recovery Services vault, replicação A2A e on-prem VMware/Hyper-V/físicos, Recovery Plans, Test/Planned/Unplanned Failover, Failback, RPO/RTO, Azure Monitor/Log Analytics, VPN/ExpressRoute, Storage/Entra/RBAC, automação Azure CLI/PowerShell, ITIL4 e documentação DR**.
+- Reforçou demandas por Terraform, provisionamento, CI/CD, troubleshooting, monitoramento e trabalho multidisciplinar.
+- Incluiu Windows 10/11, Server 2016/2019/2022, AD DS/GPO/DNS/DHCP/File Server, Entra Connect/Cloud Sync, Microsoft 365, MFA/Conditional Access/Zero Trust, VMware/Proxmox, suporte Azure e AWS.
+- Publicados **SEM execução no cluster**: `labs/dr-azure/simular-dr.py` (3 cenários simulados, RPO/RTO, plano de recovery, failback com reconciliação), `labs/dr-azure/inventario-azure-readonly.sh` (opcional Azure CLI e conta autorizada), `labs/dr-azure/README.md`, `docs/TRILHA-DR-ASR-AD-M365-DEVOPS.md`.
+- Os scripts não replicam VMs, não acessam cloud automaticamente, não fazem failover real e não foram testados pelo usuário. O Azure Site Recovery continua como tópico **a implementar na assinatura sandbox autorizada**.
+- Próxima aula: `git pull --rebase origin main` e `python3 sre-killercoda-lab/labs/dr-azure/simular-dr.py`. Revisar os resultados planejado vs não planejado e explicar RPO/RTO; depois estudar Azure Backup e recovery plans reais com referências Microsoft.
+- A auditoria adicional `labs/infra-senior/diagnostico-recursos.py` da aula de capacidade permanece pendente de execução, podendo ser retomada em seguida.
