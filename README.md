@@ -12,7 +12,7 @@ cd sre-killercoda-lab
 bash iniciar.sh
 ```
 
-**O `iniciar.sh` automatiza o setup:** verifica Kubernetes, instala `gh` via `apt` se necessário, abre o login seguro pelo dispositivo (você autoriza no Chrome), configura nome/e-mail Git apenas neste repositório, aplica `lab-completo.yaml`, valida DNS/HTTP e inicia o monitor de checkpoints: um logo no início e novos a cada **50 minutos**.
+**O `iniciar.sh` automatiza o setup completo:** verifica Kubernetes, instala automaticamente o GitHub CLI (`gh`) por `apt` se estiver ausente, autentica por dispositivo no navegador, configura o Git local, restaura Blue/Green, PostgreSQL, API Python, Nginx, Apache/Kafka/RabbitMQ e valida o Full Stack. Também inicia checkpoints Git a cada **50 minutos**. Não reinstala `gh` quando já existe.
 
 O `git clone` sozinho **não instala softwares nem executa scripts**. Execute `bash iniciar.sh` em cada nova VM. Como a VM é descartável, o login do GitHub também precisará ser autorizado novamente.
 
@@ -67,18 +67,31 @@ python3 sre-killercoda-lab/labs/dr-azure/simular-dr.py
 O código foi publicado, porém não foi executado pelo usuário no KillerCoda. Nenhum recurso Azure foi provisionado; nenhuma VM replicada. O novo módulo não altera o bootstrap padrão.
 
 
-## Novo módulo opcional: PostgreSQL + Backend + Frontend (12/11/2026)
+## PostgreSQL + API + Frontend incluídos no bootstrap padrão (12/11/2026)
 
-O laboratório agora possui aplicação **Full Stack de incidentes SRE**: PostgreSQL 17 com PVC, API REST Python/Psycopg 3 e frontend HTML/JS em Nginx. É um módulo separado em namespace sre-fullstack-lab, não instalado automaticamente pelo iniciar.sh.
+O laboratório **Full Stack de incidentes SRE** já foi executado e validado em Kubernetes: PostgreSQL 17 com PVC, API REST Python/Psycopg e frontend HTML/JS em Nginx. Agora o comando `bash iniciar.sh` **instala e valida esse módulo automaticamente** no namespace `sre-fullstack-lab`.
 
-- [Guia de instalação e testes](sre-killercoda-lab/labs/fullstack-postgres/README.md)
-- [Manifestos e código do backend](sre-killercoda-lab/labs/fullstack-postgres/resources.yaml)
+- [Guia do módulo Full Stack](sre-killercoda-lab/labs/fullstack-postgres/README.md)
+- [Manifestos Kubernetes](sre-killercoda-lab/labs/fullstack-postgres/resources.yaml)
+- [Histórico das aulas](sre-killercoda-lab/docs/PROGRESSO.md)
 
-Em uma sessão Kubernetes já preparada:
+Em uma **nova sessão KillerCoda**:
 
-    cd ~/sre-killercoda-lab
-    git pull --rebase origin main
-    bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh
-    bash sre-killercoda-lab/labs/fullstack-postgres/validate-fullstack.sh
+```bash
+git clone https://github.com/lvbeserra/sre-killercoda-lab.git
+cd sre-killercoda-lab
+bash iniciar.sh
+```
 
-**Status:** publicado no GitHub, aguardando primeira instalação/validação prática no KillerCoda. O banco usa dados fictícios; nada é enviado a um PostgreSQL externo. O PVC não sobrevive ao descarte do cenário. Não expor painel ou PostgreSQL na internet sem autenticação/TLS.
+Não é necessário executar `restore-fullstack.sh` separadamente. Opcionalmente:
+
+```bash
+SRE_ENABLE_MIDDLEWARE=0 bash iniciar.sh  # mantém PostgreSQL, API e Nginx
+SRE_ENABLE_FULLSTACK=0 bash iniciar.sh   # pula o Full Stack
+```
+
+**GitHub CLI:** instalação automática quando necessário em Ubuntu/Debian com `apt-get`. Sessão descartável pede novo login; em VirtualBox, disco persistente conserva o binário instalado.
+
+**Persistência:** o GitHub armazena scripts, manifests, schema SQL e anotações, **não** os dados do PostgreSQL. Em nova sessão descartável, o banco será criado com schema vazio. Dados persistentes exigem backup SQL ou volume em disco durável. Nunca versionar credenciais e dumps com dados sensíveis.
+
+**VirtualBox:** requer uma VM com Linux, Kubernetes e armazenamento persistente previamente instalados; `iniciar.sh` restaura workloads no Kubernetes, mas não instala o cluster.
