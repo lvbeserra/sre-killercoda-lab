@@ -68,13 +68,18 @@ No Windows autorizado, usar `labs/infra-senior/inventario-windows.ps1`.
 Ambos são diagnósticos read-only e **ainda não foram testados em ambiente do usuário**.
 
 
-## Aula opcional: Full Stack PostgreSQL / API / frontend
+## Full Stack PostgreSQL / API / frontend — restauração automática
 
-Para simular incidentes de aplicação e banco, use o módulo [labs/fullstack-postgres/README.md](labs/fullstack-postgres/README.md).
+O módulo [labs/fullstack-postgres/README.md](labs/fullstack-postgres/README.md) já foi **validado no KillerCoda** com PostgreSQL, API e Nginx, CRUD, análise de SQL e teste controlado de lock. Agora é **restaurado e validado automaticamente com `bash iniciar.sh`**.
 
-    cd ~/sre-killercoda-lab
-    git pull --rebase origin main
+O setup também verifica e instala GitHub CLI (`gh`) via `apt` se necessário e solicita login seguro por navegador. Nenhum token é versionado.
+
+Para restaurar o módulo sozinho em cluster já configurado:
+
     bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh
     bash sre-killercoda-lab/labs/fullstack-postgres/validate-fullstack.sh
 
-O script é manual, não modifica os demais laboratórios. Cria um PostgreSQL single instance com PVC, API Python REST e UI Nginx; toda operação no painel usa dados simulados. A instalação ainda aguarda validação no cluster real do usuário.
+Para executar sem Full Stack: `SRE_ENABLE_FULLSTACK=0 bash iniciar.sh`.
+Para iniciar com banco e frontend, mas sem middleware: `SRE_ENABLE_MIDDLEWARE=0 bash iniciar.sh`.
+
+**KillerCoda:** namespace, Secret, Deployments, StatefulSet e PVC são recriados, mas os incidentes não sobrevivem à destruição da sessão; o schema SQL inicia banco novo e vazio. **VirtualBox:** Kubernetes/StorageClass precisam estar instalados antes do bootstrap; disco virtual persistente e backups SQL permitirão preservar dados entre reinicializações.
