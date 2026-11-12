@@ -1,6 +1,6 @@
 # Laboratório Full Stack: PostgreSQL + backend Python + frontend web
 
-**Status:** código e manifests publicados no GitHub; instalação/execução no KillerCoda ainda precisa ser validada pelo usuário.
+**Status:** executado e validado no KillerCoda em 12/11/2026, com CRUD pelo navegador, EXPLAIN SQL e simulação de bloqueio de transação. Integrado ao `iniciar.sh`.
 
 ## O que vamos construir
 - Namespace Kubernetes sre-fullstack-lab.
@@ -11,7 +11,17 @@
 
 **Não** está integrado ao Apache/Kafka/RabbitMQ automaticamente. Sem autenticação, TLS, backup externo ou HA; usar somente dados e ambientes de laboratório. Não expor publicamente na Internet.
 
-## Instalar no KillerCoda (manual e opcional)
+## Inicialização automática de todo o laboratório
+
+O fluxo padrão já instala e valida PostgreSQL, API Python e Nginx, e garante a instalação do GitHub CLI (`gh`) quando necessário:
+
+    git clone https://github.com/lvbeserra/sre-killercoda-lab.git
+    cd sre-killercoda-lab
+    bash iniciar.sh
+
+Para não instalar esse módulo, use `SRE_ENABLE_FULLSTACK=0 bash iniciar.sh`.
+
+## Restaurar apenas o Full Stack (manual, se necessário)
 
 No terminal do cenário Kubernetes:
 
@@ -85,7 +95,7 @@ Referências:
 
 Baseline medido em 12/11/2026: tabela de dois incidentes, Seq Scan, planning 1,025ms e execution 0,082ms; `pg_stat_activity` sem espera naquela consulta. Isso não indica gargalo no banco.
 
-**Exercício novo, publicado e ainda NÃO executado no cluster:**
+**Exercício executado no KillerCoda com sucesso em 12/11/2026:**
 
     cd ~/sre-killercoda-lab
     git pull --rebase origin main
