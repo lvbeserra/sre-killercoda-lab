@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SRE Lab | Incidentes PostgreSQL</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#0b1425;color:#e5ecfa}
+    *{box-sizing:border-box}body{max-width:1080px;margin:0 auto;padding:28px 20px;line-height:1.5}
+    h1{margin:0;font-size:clamp(26px,4vw,36px)}h2{font-size:20px}
+    p,small{color:#a5b4cc}.header{margin-bottom:24px}.eyebrow{color:#5eead4;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+    .panel{background:#152239;border:1px solid #34455f;border-radius:14px;padding:20px;margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}@media(max-width:780px){.grid{grid-template-columns:1fr}}
+    label{display:block;margin:10px 0 4px;color:#b9cbe2;font-size:14px}
+    input,select,textarea{width:100%;background:#0b1425;border:1px solid #475569;color:white;border-radius:8px;padding:10px;font:inherit}
+    textarea{min-height:90px;resize:vertical}
+    button{padding:10px 15px;border:0;border-radius:8px;background:#22bda6;color:#07121f;font-weight:700;cursor:pointer}
+    button.secondary{background:#35475f;color:#fff}button:disabled{opacity:.6;cursor:wait}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .muted{color:#a5b4cc}.status{min-height:28px;margin:12px 0;font-size:14px}
+    .ok{color:#5eead4}.error{color:#fca5a5}.overflow{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #34455f;font-size:14px}
+    th{color:#a5b4cc}.pill{border-radius:20px;padding:2px 8px;font-size:12px;background:#35475f;white-space:nowrap}
+    .foot{font-size:12px;color:#93a3bb;margin-top:22px}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="eyebrow">Laboratório • Backend + Frontend + PostgreSQL</div>
+    <h1>Painel de Incidentes SRE</h1>
+    <p>Registre incidentes fictícios, investigue, resolva e acompanhe a persistência no banco de dados PostgreSQL do Kubernetes.</p>
+    <div class="toolbar">
+      <button class="secondary" id="check">Testar API + banco</button>
+      <button class="secondary" id="slow">Simular 2 s de lentidão</button>
+      <span id="health" class="muted">Aguardando verificação...</span>
+    </div>
+  </div>
+  <div class="grid">
+    <section class="panel">
+      <h2>Novo incidente</h2>
+      <form id="form">
+        <label for="service">Serviço impactado</label>
+        <input id="service" maxlength="80" required value="postgres-api" placeholder="ex: kafka, api, banco">
+        <label for="severity">Prioridade</label>
+        <select id="severity">
+          <option>P1</option><option selected>P2</option><option>P3</option>
+        </select>
+        <label for="description">Sintoma observado</label>
+        <textarea id="description" maxlength="500" required placeholder="ex: latência HTTP acima de 2 segundos"></textarea>
+        <p><button id="create" type="submit">Registrar incidente</button></p>
+      </form>
+      <div id="message" class="status" role="status"></div>
+    </section>
+    <section class="panel">
+      <h2>Roteiro do SRE</h2>
+      <p><strong>1.</strong> Registrar sintoma e impacto.</p>
+      <p><strong>2.</strong> Medir latência da API e verificar banco.</p>
+      <p><strong>3.</strong> Correlacionar logs, eventos e recursos dos Pods.</p>
+      <p><strong>4.</strong> Corrigir ou mitigar de forma controlada.</p>
+      <p><strong>5.</strong> Validar e registrar o resultado.</p>
+      <small>O botão "Simular 2 s" introduz uma espera artificial somente naquela requisição; não simula CPU ou I/O saturado.</small>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="toolbar">
+      <h2 style="margin-right:auto">Incidentes armazenados</h2>
+      <button class="secondary" id="reload">Atualizar</button>
+    </div>
+    <div class="overflow">
+      <table>
+        <thead><tr><th>ID</th><th>Serviço</th><th>Prioridade</th><th>Estado</th><th>Descrição</th><th>Ações</th></tr></thead>
+        <tbody id="list"><tr><td colspan="6">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+  <div class="foot">Ambiente de treinamento, sem autenticação ou dados de clientes. Banco e filas permanecem apenas durante a sessão KillerCoda, a menos que seja feito backup externo aprovado.</div>
+<script>
+"use strict";
+const byId = id => document.getElementById(id);
+const setMessage = (text, ok = true) => {
+  byId("message").textContent = text;
+  byId("message").className = "status " + (ok ? "ok" : "error");
+};
+async function request(url, options = {}) {
+  const response = await fetch(url, {cache:"no-store", ...options});
+  let data;
+  try { data = await response.json(); } catch { throw new Error("Resposta inesperada da API"); }
+  if (!response.ok) throw new Error(data.error || "HTTP " + response.status);
+  return data;
+}
+function cell(row, text) {
+  const td = document.createElement("td");
+  td.textContent = String(text);
+  row.appendChild(td);
+  return td;
+}
+async function loadIncidents() {
+  const tbody = byId("list");
+  try {
+    const {items} = await request("/api/incidents");
+    tbody.replaceChildren();
+    if (!items.length) {
+      const row = document.createElement("tr");
+      const td = cell(row, "Nenhum incidente registrado");
+      td.colSpan = 6;
+      tbody.appendChild(row);
+      return;
+    }
+    for (const item of items) {
+      const row = document.createElement("tr");
+      cell(row, item.id);
+      cell(row, item.service);
+      cell(row, item.severity);
+      cell(row, item.status);
+      cell(row, item.description);
+      const actions = document.createElement("td");
+      if (item.status !== "RESOLVED") {
+        const button = document.createElement("button");
+        button.className = "secondary";
+        button.textContent = item.status === "OPEN" ? "Investigar" : "Resolver";
+        button.onclick = async () => {
+          button.disabled = true;
+          try {
+            const status = item.status === "OPEN" ? "INVESTIGATING" : "RESOLVED";
+            await request("/api/incidents/" + item.id, {
+              method:"PATCH", headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({status})
+            });
+            setMessage("Incidente #" + item.id + " atualizado para " + status);
+            await loadIncidents();
+          } catch (error) { setMessage(error.message, false); button.disabled = false; }
+        };
+        actions.appendChild(button);
+      } else actions.textContent = "Concluído";
+      row.appendChild(actions);
+      tbody.appendChild(row);
+    }
+  } catch (error) {
+    tbody.replaceChildren();
+    const row = document.createElement("tr");
+    const td = cell(row, "Falha ao consultar backend/PostgreSQL: " + error.message);
+    td.colSpan = 6;
+    tbody.appendChild(row);
+  }
+}
+byId("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const button = byId("create");
+  button.disabled = true;
+  try {
+    const obj = {
+      service:byId("service").value.trim(),
+      severity:byId("severity").value,
+      description:byId("description").value.trim()
+    };
+    const data = await request("/api/incidents", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(obj)
+    });
+    setMessage("Incidente #" + data.id + " gravado no PostgreSQL.");
+    byId("description").value = "";
+    await loadIncidents();
+  } catch (error) { setMessage(error.message, false); }
+  finally { button.disabled = false; }
+});
+byId("reload").onclick = loadIncidents;
+byId("check").onclick = async () => {
+  const start = performance.now();
+  try {
+    const data = await request("/api/health");
+    byId("health").textContent = "API " + data.status + ", PostgreSQL " + data.database +
+      " (" + Math.round(performance.now() - start) + " ms)";
+    byId("health").className = "ok";
+  } catch (error) {
+    byId("health").textContent = "Falha: " + error.message;
+    byId("health").className = "error";
+  }
+};
+byId("slow").onclick = async () => {
+  const start = performance.now();
+  try {
+    const data = await request("/api/slow?ms=2000");
+    setMessage("Latência artificial: " + data.simulated_delay_ms +
+      " ms; tempo observado no navegador: " + Math.round(performance.now() - start) + " ms.");
+  } catch(error) { setMessage(error.message,false); }
+};
+byId("check").click();
+loadIncidents();
+</script>
+</body>
+</html>
