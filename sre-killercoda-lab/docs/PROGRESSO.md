@@ -506,3 +506,17 @@ sre-web-green-j6nb7   IPv4          8080    192.168.1.18                 20s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## INC-SRE-001 — Investigação de latência HTTP (12/11/2026)
+
+**Cenário controlado de laboratório, não incidente real de produção.**
+
+- `sre-release-lab`: dois Pods `drain-demo` 1/1 Running (sem restart), Service `drain-demo` ClusterIP 10.98.252.15:80; Pods `web-blue` e `web-green` também Running.
+- Teste por `kubectl exec deploy/web-blue`: `GET /ready` retornou `READY` em **0,127 s**, enquanto `GET /slow` retornou `COMPLETED pod=drain-demo-89554557b-khbgb` em **12,163 s** (tempos de comando incluem overhead do kubectl).
+- Logs do Pod `drain-demo-89554557b-khbgb`: `REQUEST_START 1794521476.381474` e `REQUEST_END 1794521488.382077`, diferença **12,000603 s**. `GET /slow HTTP/1.1` retornou **200**.
+- No período, probes `GET /ready` continuaram retornando **HTTP 200**, inclusive durante o processamento da requisição lenta. O outro Pod registrou readiness 200.
+- `kubectl get cm drain-app -o jsonpath='{.data.server\.py}'` comprovou que o handler `/slow` executa `time.sleep(12)` antes de enviar `HTTP 200`. **Causa do atraso reproduzido confirmada: espera intencional de aplicação**. Não se demonstrou saturação de CPU/memória, falha de rede nem degradação generalizada.
+- **Decisão SRE:** não reiniciar Pods, nem aumentar recursos sem evidência. Alertas de disponibilidade (`/ready`) e de latência em endpoints de negócio devem ser distintos; não interpretar resposta 200 como desempenho satisfatório. Cuidado para não fazer o endpoint artificial `/slow` definir o SLO de usuários reais.
+- Próxima aula: investigar um **novo** incidente controlado com contenção de CPU ou dependência lenta, coletar antes/durante/depois e validar mitigação. Não confundir o caso `/slow` com lentidão inesperada em produção.
+
+**Fala curta para entrevista:** "Em um cenário de lentidão, comparei health check e operação específica, medi os tempos, correlacionei logs e ConfigMap. Encontrei um atraso de 12 segundos introduzido pela aplicação, sem evidência de problema de infraestrutura. Evitei reinícios desnecessários e separei disponibilidade de latência."
