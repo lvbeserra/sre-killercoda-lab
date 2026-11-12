@@ -4,4 +4,4 @@ metadata:
   name: sre-fullstack-lab
   labels:
     app.kubernetes.io/part-of: sre-killercoda-lab
-    lab.openai.com/component: fullstack-postgres
+    sre-training/component: fullstack-postgres
