@@ -540,3 +540,9 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Métricas `sre_api_requests_total` retornaram contadores HTTP 200 e `/readyz` com 2 ocorrências HTTP 503 anteriores à coleta, mais 1 resposta 200; **não está comprovado** o motivo dos 503, embora compatível com aquecimento do PostgreSQL. No momento final todos Pods Ready.
 - **Ainda pendente:** executar `bash sre-killercoda-lab/labs/fullstack-postgres/test-incident-flow.sh` (POST + PATCH + GET, escrita no DB), validar a UI em preview local do KillerCoda, e fazer os testes de latência/dependência.
 - Segurança: aplicação sem autenticação/TLS e com dados fictícios, não expor em rede pública; PVC local-path persiste durante sessão mas não após destruição do KillerCoda.
+
+## Full Stack: CRUD pelo frontend com persistência SQL — 12/11/2026
+- PostgreSQL `srelab`, tabela `incidents`: `SELECT id, service, severity, status FROM incidents ORDER BY id DESC` exibiu dois registros **P2/INVESTIGATING**: ID 1 `api-pagamentos-lab` (criado anteriormente pelo teste automatizado) e ID 2 `postgres-api` (registrado pelo usuário no painel web).
+- Comprovado que a interface HTTP no KillerCoda (acessada por port-forward 8081), o Nginx, a API Python e o PostgreSQL se comunicam com persistência. Não atribuir a origem da alteração de status INVESTIGATING apenas ao POST, pois o POST padrão cria como OPEN.
+- **Próxima aula, ainda não executada:** comparar tempos HTTP `GET /api/health` (verifica banco por SELECT 1) versus `GET /api/slow?ms=2000` (sleep artificial do backend sem consulta SQL) usando perf_counter em cliente Python executado dentro do Pod de API contra `http://incidents-web`. Antes de qualquer ajuste, correlacionar desempenho da camada correta.
+- Este teste de latência será diagnóstico educacional, não indica lentidão genuína de PostgreSQL.
