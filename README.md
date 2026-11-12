@@ -65,3 +65,20 @@ python3 sre-killercoda-lab/labs/dr-azure/simular-dr.py
 ```
 
 O código foi publicado, porém não foi executado pelo usuário no KillerCoda. Nenhum recurso Azure foi provisionado; nenhuma VM replicada. O novo módulo não altera o bootstrap padrão.
+
+
+## Novo módulo opcional: PostgreSQL + Backend + Frontend (12/11/2026)
+
+O laboratório agora possui aplicação **Full Stack de incidentes SRE**: PostgreSQL 17 com PVC, API REST Python/Psycopg 3 e frontend HTML/JS em Nginx. É um módulo separado em namespace sre-fullstack-lab, não instalado automaticamente pelo iniciar.sh.
+
+- [Guia de instalação e testes](sre-killercoda-lab/labs/fullstack-postgres/README.md)
+- [Manifestos e código do backend](sre-killercoda-lab/labs/fullstack-postgres/resources.yaml)
+
+Em uma sessão Kubernetes já preparada:
+
+    cd ~/sre-killercoda-lab
+    git pull --rebase origin main
+    bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh
+    bash sre-killercoda-lab/labs/fullstack-postgres/validate-fullstack.sh
+
+**Status:** publicado no GitHub, aguardando primeira instalação/validação prática no KillerCoda. O banco usa dados fictícios; nada é enviado a um PostgreSQL externo. O PVC não sobrevive ao descarte do cenário. Não expor painel ou PostgreSQL na internet sem autenticação/TLS.
