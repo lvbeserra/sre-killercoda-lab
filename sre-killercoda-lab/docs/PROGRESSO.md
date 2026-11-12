@@ -474,3 +474,35 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Os scripts não replicam VMs, não acessam cloud automaticamente, não fazem failover real e não foram testados pelo usuário. O Azure Site Recovery continua como tópico **a implementar na assinatura sandbox autorizada**.
 - Próxima aula: `git pull --rebase origin main` e `python3 sre-killercoda-lab/labs/dr-azure/simular-dr.py`. Revisar os resultados planejado vs não planejado e explicar RPO/RTO; depois estudar Azure Backup e recovery plans reais com referências Microsoft.
 - A auditoria adicional `labs/infra-senior/diagnostico-recursos.py` da aula de capacidade permanece pendente de execução, podendo ser retomada em seguida.
+
+## Checkpoint da sessão — 2026-11-12 22:07:38 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE     VERSION
+controlplane   Ready    control-plane   7d10h   v1.37.1
+node01         Ready    <none>          7d10h   v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           19s   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           19s   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           19s   web          busybox:1.36         app=sre-web,track=green
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP              NODE           NOMINATED NODE   READINESS GATES
+pod/drain-demo-89554557b-khbgb   1/1     Running   0          18s   192.168.0.68    controlplane   <none>           <none>
+pod/drain-demo-89554557b-lnndt   1/1     Running   0          18s   192.168.1.40    node01         <none>           <none>
+pod/web-blue-5c57468c74-l8ggz    1/1     Running   0          19s   192.168.0.97    controlplane   <none>           <none>
+pod/web-blue-5c57468c74-rmgnn    1/1     Running   0          19s   192.168.1.240   node01         <none>           <none>
+pod/web-green-6654db8d7b-h2ljw   1/1     Running   0          19s   192.168.1.18    node01         <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.98.252.15     <none>        80/TCP    18s   app=drain-demo
+service/sre-web         ClusterIP   10.102.100.166   <none>        80/TCP    19s   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.106.117.57    <none>        80/TCP    19s   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                    AGE
+drain-demo-9slhs      IPv4          8080    192.168.0.68,192.168.1.40    19s
+sre-web-4zfm7         IPv4          8080    192.168.0.97,192.168.1.240   20s
+sre-web-green-j6nb7   IPv4          8080    192.168.1.18                 20s
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
