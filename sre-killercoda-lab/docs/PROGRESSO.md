@@ -530,3 +530,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - O teste de fluxo de escrita e leitura criará um **incidente fictício** no banco; o endpoint /api/slow introduz espera controlada de até 3s, não prova contenção real de CPU nem lock de banco.
 - **Próxima aula pendente:** em KillerCoda restaurado, executar git pull e bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh. Analisar saída de kubectl (pvc/pods/deployments), depois validate-fullstack.sh e test-incident-flow.sh.
 - Cuidado: o backend instala dependência Python em startup e exige acesso à PyPI; se não houver, diagnosticar logs. O exemplo não implementa autenticação, TLS, HA ou DR, logo não deve ser exposto publicamente nem utilizado com dados reais.
+
+## Instalação Full Stack validada — 12/11/2026
+- Com `git pull --rebase origin main`, foram baixados os 13 arquivos do módulo `sre-killercoda-lab/labs/fullstack-postgres` e executado `restore-fullstack.sh` no KillerCoda.
+- Namespace `sre-fullstack-lab` e Secret com senha randômica criados; 4 ConfigMaps publicados.
+- `StatefulSet/postgres`, `Deployment/incidents-api` e `Deployment/incidents-web` concluíram rollout. **3/3 Pods 1/1 Running, RESTARTS=0**: `postgres-0` no `controlplane`, API e frontend no `node01`.
+- Services ClusterIP: `postgres` TCP 5432, `incidents-api` TCP 8000, `incidents-web` TCP 80. PVC `data-postgres-0` **1Gi, RWO, Bound, local-path**.
+- `validate-fullstack.sh` **aprovado**. PostgreSQL `srelab|0` comprova schema/tabela acessíveis e nenhum incidente cadastrado no momento da verificação. `GET http://incidents-web/api/health` retornou `{"status":"ok","database":"connected","test":1}`, e `GET /api/incidents` retornou `{"items":[]}`. Atravessou Nginx/API, com Postgres em outro node.
+- Métricas `sre_api_requests_total` retornaram contadores HTTP 200 e `/readyz` com 2 ocorrências HTTP 503 anteriores à coleta, mais 1 resposta 200; **não está comprovado** o motivo dos 503, embora compatível com aquecimento do PostgreSQL. No momento final todos Pods Ready.
+- **Ainda pendente:** executar `bash sre-killercoda-lab/labs/fullstack-postgres/test-incident-flow.sh` (POST + PATCH + GET, escrita no DB), validar a UI em preview local do KillerCoda, e fazer os testes de latência/dependência.
+- Segurança: aplicação sem autenticação/TLS e com dados fictícios, não expor em rede pública; PVC local-path persiste durante sessão mas não após destruição do KillerCoda.
