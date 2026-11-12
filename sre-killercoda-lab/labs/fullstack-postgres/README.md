@@ -80,3 +80,17 @@ Referências:
 - https://hub.docker.com/_/postgres
 - https://www.psycopg.org/
 - https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+## Aula INC-SRE-003 — Disputa por lock e troubleshooting PostgreSQL
+
+Baseline medido em 12/11/2026: tabela de dois incidentes, Seq Scan, planning 1,025ms e execution 0,082ms; `pg_stat_activity` sem espera naquela consulta. Isso não indica gargalo no banco.
+
+**Exercício novo, publicado e ainda NÃO executado no cluster:**
+
+    cd ~/sre-killercoda-lab
+    git pull --rebase origin main
+    bash sre-killercoda-lab/labs/fullstack-postgres/test-db-lock.sh
+
+O script segura um bloqueio de linha via `SELECT ... FOR UPDATE` em incidente fictício, inicia uma atualização concorrente de mesmo registro com `lock_timeout` de 3500ms, observa `wait_event_type=Lock`/`pg_blocking_pids` e desfaz ambas as transações com `ROLLBACK`. **Não persistirá atualizações.**
+
+Se o teste confirmar o bloqueio, investigar por que uma transação real ficaria aberta tanto tempo e qual política de timeout/monitoramento convém. Não usar `pg_terminate_backend` em produção sem avaliar o impacto, dono da transação e autorização.
