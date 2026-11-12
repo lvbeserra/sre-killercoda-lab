@@ -520,3 +520,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Próxima aula: investigar um **novo** incidente controlado com contenção de CPU ou dependência lenta, coletar antes/durante/depois e validar mitigação. Não confundir o caso `/slow` com lentidão inesperada em produção.
 
 **Fala curta para entrevista:** "Em um cenário de lentidão, comparei health check e operação específica, medi os tempos, correlacionei logs e ConfigMap. Encontrei um atraso de 12 segundos introduzido pela aplicação, sem evidência de problema de infraestrutura. Evitei reinícios desnecessários e separei disponibilidade de latência."
+
+
+## Novo módulo criado — PostgreSQL, Backend e Frontend — 12/11/2026
+
+- Solicitação: acrescentar PostgreSQL para testes reais de integração backend/frontend e troubleshooting SRE de latência, depois de confirmar que o incidente /slow anterior era causado por sleep intencional.
+- Publicado no repositório, ainda **não executado no KillerCoda**: módulo opcional labs/fullstack-postgres. Componentes: namespace sre-fullstack-lab; StatefulSet PostgreSQL 17-alpine, PVC 1Gi; Secret gerado aleatoriamente no cluster; ConfigMap com schema SQL; API Python 3.12 com Psycopg 3, rotas GET/POST/PATCH e /metrics; frontend HTML/JavaScript servido por Nginx, com proxy /api/; scripts de deploy, validação read-only e teste de escrita.
+- Dados persistem no PVC apenas enquanto a infraestrutura KillerCoda existir, sem backup/HA. O bootstrap iniciar.sh não foi alterado, para poupar recursos.
+- O teste de fluxo de escrita e leitura criará um **incidente fictício** no banco; o endpoint /api/slow introduz espera controlada de até 3s, não prova contenção real de CPU nem lock de banco.
+- **Próxima aula pendente:** em KillerCoda restaurado, executar git pull e bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh. Analisar saída de kubectl (pvc/pods/deployments), depois validate-fullstack.sh e test-incident-flow.sh.
+- Cuidado: o backend instala dependência Python em startup e exige acesso à PyPI; se não houver, diagnosticar logs. O exemplo não implementa autenticação, TLS, HA ou DR, logo não deve ser exposto publicamente nem utilizado com dados reais.
