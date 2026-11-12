@@ -563,3 +563,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Nenhuma lentidão do PostgreSQL foi confirmada na consulta de baseline; separar esse resultado da simulação de 2s via `/api/slow?ms=2000`.
 - Publicado **pendente de execução no cluster**: `labs/fullstack-postgres/test-db-lock.sh`, teste controlado de disputa por row lock em registro fictício, medição de `pg_stat_activity.wait_event_type=Lock`, `pg_blocking_pids`, lock_timeout (3,5s), `ROLLBACK` garantido. Usa Psycopg já instalado no Pod da API; não persiste alterações.
 - Próxima aula: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/fullstack-postgres/test-db-lock.sh`; interpretar concorrência vs saturação de recursos. Não executar fora do namespace lab.
+
+## INC-SRE-003 — Contenção por row lock reproduzida e validada — 12/11/2026
+- `git pull --rebase origin main` atualizou o módulo `labs/fullstack-postgres/test-db-lock.sh`; `Deployment/incidents-api` retornou rollout concluído.
+- Exercício executado pelo usuário com sucesso em `sre-fullstack-lab` sobre **registro fictício ID 2**. Transação A reteve row lock, enquanto a transação B tentou atualizar o mesmo registro.
+- Saída coletada em tempo real: `pid=1781`, `state=active`, `wait_event_type=Lock`, `wait_event=transactionid`, `pg_blocking_pids=[1779]`. Portanto, **PID 1779 foi o bloqueador observado** da sessão 1781.
+- A transação B retornou `SQLSTATE 55P03` após `lock_timeout` configurado em **3500 ms** (valor de limite, não medição exata da duração). 
+- A transação A liberou o lock via `ROLLBACK`; todas as transações foram revertidas, sem atualização persistida segundo o resultado do script. `wait_seen=True`, `timeout_seen=True`, mensagem final **SUCESSO: bloqueio reproduzido, observado e encerrado com rollback**.
+- **RCA do cenário de laboratório:** a demora nesta operação concorrente decorreu da espera por bloqueio de transação PostgreSQL. Este teste isolado não demonstra saturação de CPU, lentidão geral do PostgreSQL nem impacto real no navegador.
+- Próxima ação: verificar novamente se as sessões artificiais desapareceram e se o status do incidente 2 permaneceu `INVESTIGATING`. Em uma etapa posterior, correlacionar requisição `PATCH` da API com bloqueio SQL, medir latência HTTP e preparar runbook de mitigação; não executar `pg_terminate_backend` indiscriminadamente em produção.
+- **Fala treinável:** "Reproduzi uma espera por bloqueio no PostgreSQL. Usei pg_stat_activity e pg_blocking_pids para identificar o processo bloqueador; o cliente atingiu lock_timeout e confirmei a liberação pelo rollback, sem mudar dados. Isso mostra que latência pode vir de contenção, mesmo sem prova de falta de CPU." 
