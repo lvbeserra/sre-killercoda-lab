@@ -546,3 +546,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Comprovado que a interface HTTP no KillerCoda (acessada por port-forward 8081), o Nginx, a API Python e o PostgreSQL se comunicam com persistência. Não atribuir a origem da alteração de status INVESTIGATING apenas ao POST, pois o POST padrão cria como OPEN.
 - **Próxima aula, ainda não executada:** comparar tempos HTTP `GET /api/health` (verifica banco por SELECT 1) versus `GET /api/slow?ms=2000` (sleep artificial do backend sem consulta SQL) usando perf_counter em cliente Python executado dentro do Pod de API contra `http://incidents-web`. Antes de qualquer ajuste, correlacionar desempenho da camada correta.
 - Este teste de latência será diagnóstico educacional, não indica lentidão genuína de PostgreSQL.
+
+## INC-SRE-002 — Latência do backend vs health PostgreSQL — 12/11/2026
+- Cliente Python no Pod `deploy/incidents-api` fez HTTP via Service Nginx `incidents-web` e mediu com `time.perf_counter()`.
+- `GET /api/health`: HTTP 200, **0,082s** (82ms), executa validação simples `SELECT 1` no PostgreSQL.
+- `GET /api/slow?ms=2000`: HTTP 200, **2,003s** (2003ms), simula atraso explícito via `time.sleep(2)` sem consulta a SQL.
+- **Diagnóstico:** a demora reproduzida no endpoint /api/slow é intencional na camada backend Python. O teste simples de saúde da base passou; isso não comprova ausência de problemas em consultas reais, locks, throughput ou p95 em tráfego de produção.
+- A medição inclui Nginx, rede e HTTP interno, porém somente uma requisição por endpoint; não representa latência geral, SLO ou desempenho sob carga.
+- **Decisão:** não reiniciar serviços nem dimensionar CPU/RAM com base nesse teste. Próximo passo: iniciar baseline PostgreSQL **somente leitura**, consultar `pg_stat_activity`, tamanho e contagem da tabela e `EXPLAIN (ANALYZE, BUFFERS) SELECT...` antes de simular contenção real em DB de laboratório.
+- Fala de 20s: "Comparei uma operação lenta com o health do banco, medi 2s contra 82ms e correlacionei com o código. Descobri que a latência foi introduzida propositalmente no backend; evitei modificar o banco sem evidência."
