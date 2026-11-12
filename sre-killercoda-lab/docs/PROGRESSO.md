@@ -555,3 +555,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - A medição inclui Nginx, rede e HTTP interno, porém somente uma requisição por endpoint; não representa latência geral, SLO ou desempenho sob carga.
 - **Decisão:** não reiniciar serviços nem dimensionar CPU/RAM com base nesse teste. Próximo passo: iniciar baseline PostgreSQL **somente leitura**, consultar `pg_stat_activity`, tamanho e contagem da tabela e `EXPLAIN (ANALYZE, BUFFERS) SELECT...` antes de simular contenção real em DB de laboratório.
 - Fala de 20s: "Comparei uma operação lenta com o health do banco, medi 2s contra 82ms e correlacionei com o código. Descobri que a latência foi introduzida propositalmente no backend; evitei modificar o banco sem evidência."
+
+## INC-SRE-003 — Baseline PostgreSQL e próximo teste de bloqueio — 12/11/2026
+
+- Usuário executou `pg_stat_activity` em `srelab`. Retornou apenas a própria sessão de diagnóstico `pid=1441, state=active, duration=00:00:00`, com `wait_event_type` e `wait_event` vazios. **Não foram observados bloqueios naquele instante**; não significa que nunca ocorram esperas.
+- `EXPLAIN (ANALYZE, BUFFERS)` de `SELECT id, service, severity, status FROM incidents ORDER BY id DESC LIMIT 50`: 2 linhas, Seq Scan, Sort quicksort 25kB, 4 shared buffer hits, planning 1,025 ms, **execution 0,082 ms**. Em tabela de duas linhas, Seq Scan é esperado e eficiente, não justificando novo índice.
+- Nenhuma lentidão do PostgreSQL foi confirmada na consulta de baseline; separar esse resultado da simulação de 2s via `/api/slow?ms=2000`.
+- Publicado **pendente de execução no cluster**: `labs/fullstack-postgres/test-db-lock.sh`, teste controlado de disputa por row lock em registro fictício, medição de `pg_stat_activity.wait_event_type=Lock`, `pg_blocking_pids`, lock_timeout (3,5s), `ROLLBACK` garantido. Usa Psycopg já instalado no Pod da API; não persiste alterações.
+- Próxima aula: `git pull --rebase origin main` e `bash sre-killercoda-lab/labs/fullstack-postgres/test-db-lock.sh`; interpretar concorrência vs saturação de recursos. Não executar fora do namespace lab.
