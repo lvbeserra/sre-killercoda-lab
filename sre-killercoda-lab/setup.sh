@@ -71,6 +71,27 @@ bash validate.sh
 echo "=== INICIANDO CHECKPOINTS ANTES DO MIDDLEWARE ==="
 bash start-checkpoints.sh
 
+echo "=== INICIANDO FULL STACK: POSTGRESQL, API PYTHON E NGINX ==="
+# Habilitado por padrao. Use SRE_ENABLE_FULLSTACK=0 somente em ambientes pequenos
+# ou ao executar exclusivamente os modulos de Kubernetes/middleware.
+FULLSTACK_OK=1
+if [[ "${SRE_ENABLE_FULLSTACK:-1}" == "1" ]]; then
+  if bash labs/fullstack-postgres/restore-fullstack.sh; then
+    echo "=== VALIDANDO POSTGRESQL, API E FRONTEND ==="
+    if bash labs/fullstack-postgres/validate-fullstack.sh; then
+      echo "SUCESSO: Full Stack restaurado e validado."
+    else
+      FULLSTACK_OK=0
+      echo "ERRO: Full Stack instalado mas validacao funcional falhou. Confira kubectl -n sre-fullstack-lab get pods,svc,pvc." >&2
+    fi
+  else
+    FULLSTACK_OK=0
+    echo "ERRO: falha ao restaurar Full Stack. Confira os eventos do namespace sre-fullstack-lab." >&2
+  fi
+else
+  echo "Full Stack desativado por SRE_ENABLE_FULLSTACK=0."
+fi
+
 echo "=== INICIANDO APACHE, KAFKA E RABBITMQ ==="
 # Desative num cenário com pouca memória usando SRE_ENABLE_MIDDLEWARE=0.
 if [[ "${SRE_ENABLE_MIDDLEWARE:-1}" == "1" ]]; then
@@ -114,3 +135,8 @@ echo
 echo "Bootstrap finalizado: confira o status de todos os Pods e o sucesso do git push no log."
 echo "Confira envio: sleep 3; tail -30 /tmp/sre-checkpoints.log"
 echo "IMPORTANTE: a VM e a autenticacao do gh não persistem entre sessões KillerCoda."
+echo "Para abrir a interface do Full Stack, use o port-forward descrito no README."
+if [[ "${FULLSTACK_OK:-1}" != "1" ]]; then
+  echo "ERRO: um ou mais testes do Full Stack falharam. O bootstrap terminou com falha detectada." >&2
+  exit 1
+fi
