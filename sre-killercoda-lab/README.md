@@ -66,3 +66,15 @@ O módulo é **manual** e não adiciona workloads ao Kubernetes automaticamente.
 Primeira tarefa opcional no KillerCoda: `python3 labs/infra-senior/audit-k8s.py`.
 No Windows autorizado, usar `labs/infra-senior/inventario-windows.ps1`.
 Ambos são diagnósticos read-only e **ainda não foram testados em ambiente do usuário**.
+
+
+## Aula opcional: Full Stack PostgreSQL / API / frontend
+
+Para simular incidentes de aplicação e banco, use o módulo [labs/fullstack-postgres/README.md](labs/fullstack-postgres/README.md).
+
+    cd ~/sre-killercoda-lab
+    git pull --rebase origin main
+    bash sre-killercoda-lab/labs/fullstack-postgres/restore-fullstack.sh
+    bash sre-killercoda-lab/labs/fullstack-postgres/validate-fullstack.sh
+
+O script é manual, não modifica os demais laboratórios. Cria um PostgreSQL single instance com PVC, API Python REST e UI Nginx; toda operação no painel usa dados simulados. A instalação ainda aguarda validação no cluster real do usuário.
