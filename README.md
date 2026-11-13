@@ -114,3 +114,23 @@ bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
 ~~~
 
 A trilha GCP e opcional e **nao altera o iniciar.sh**: nenhum projeto GCP, GKE, Cloud SQL ou recurso faturavel sera criado automaticamente. O roteiro e o script foram publicados, mas o novo assessment ainda precisa ser executado pelo usuario.
+
+
+## Novo modulo pratico: Apache HTTP Server + Tomcat + WildFly (13/11/2026)
+
+Adicionada uma aula de sustentacao Java: Apache httpd como proxy reverso, Tomcat 10.1 como container Servlet/JSP e WildFly (projeto comunitario relacionado a JBoss EAP) como servidor Jakarta EE. O exercicio inclui Deployments, Services ClusterIP, readiness/startup/liveness, ConfigMaps, JSP, scripts de restore e validacao HTTP. **Codigo publicado, execucao no cluster ainda pendente.**
+
+- [Guia de instalacao e troubleshooting](sre-killercoda-lab/labs/java-middleware/README.md)
+- [Manifests Apache + Tomcat](sre-killercoda-lab/labs/java-middleware/base.yaml)
+- [WildFly opcional](sre-killercoda-lab/labs/java-middleware/wildfly.yaml)
+
+No KillerCoda com cluster ja pronto:
+
+~~~bash
+cd ~/sre-killercoda-lab
+git pull --rebase origin main
+bash sre-killercoda-lab/labs/java-middleware/restore-java.sh
+bash sre-killercoda-lab/labs/java-middleware/validate-java.sh
+~~~
+
+Por seguranca de capacidade, nao foi incluido no iniciar.sh automaticamente. WildFly so e iniciado se especificado --with-wildfly, apos validar memoria. Nao instala JBoss EAP licenciado nem qualquer recurso cloud.
