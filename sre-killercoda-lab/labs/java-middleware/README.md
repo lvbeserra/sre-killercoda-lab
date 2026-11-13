@@ -167,3 +167,40 @@ kubectl -n sre-java-lab delete -f sre-killercoda-lab/labs/java-middleware/wildfl
 ~~~
 
 **Estado:** perfil publicado no GitHub e ainda NÃO validado pelo estudante no KillerCoda.
+
+
+## INC-SRE-004 — CrashLoopBackOff por requisito de CPU x86-64-v3 (13/11/2026)
+
+**Incidente executado e diagnosticado no KillerCoda:**
+- WildFly `quay.io/wildfly/wildfly-ee-10:latest-jdk21` iniciava em `node01` e falhava instantaneamente com `CrashLoopBackOff`, `ExitCode 127` e log **`Fatal glibc error: CPU does not support x86-64-v3`**.
+- InitContainer `prepare-exploded-war` terminou `Completed / exit 0`. O Tomcat e Apache continuaram saudáveis. Não há evidência de OOM: falha é incompatibilidade de CPU da imagem.
+- Causa: desde WildFly 41 as imagens passaram de `ubi9-minimal` para `ubi10-minimal`; o RHEL 10 requer x86-64-v3. O processador visível ao cluster não atende. **Não tentar consertar com memória ou probes.**
+- **Correção em avaliação (ainda não implantada pelo usuário):** imagem EE10 **`quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21`**, lançada para UBI9, JDK21. É tag fixa antiga, escolhida apenas para compatibilidade em laboratório efêmero; avaliar patches/CVEs para outros usos.
+- O `restore-java.sh --with-wildfly` agora restaura `replicas=1` inclusive se o Deployment foi escalado para zero para contenção.
+
+### Recuperar com segurança (somente no lab)
+
+~~~bash
+cd ~/sre-killercoda-lab
+git pull --rebase origin main
+# O restore aplica imagem corrigida sem mexer no PostgreSQL nem nos outros namespaces.
+bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly
+bash sre-killercoda-lab/labs/java-middleware/validate-java.sh
+kubectl -n sre-java-lab get pods -o wide
+~~~
+
+Se houver nova falha:
+
+~~~bash
+kubectl -n sre-java-lab get pods -l app=wildfly-app -o wide
+kubectl -n sre-java-lab logs deploy/wildfly-app -c wildfly --previous --tail=80
+kubectl -n sre-java-lab describe pod -l app=wildfly-app
+~~~
+
+**Interromper tentativas sem excluir configurações:** `kubectl -n sre-java-lab scale deployment/wildfly-app --replicas=0`.
+
+### Referências oficiais
+- https://www.wildfly.org/news/2026/07/16/WildFly-41-is-released/ — adoção do UBI 10
+- https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/considerations_in_adopting_rhel_10/architectures — requisitos de CPU x86-64-v3
+- https://github.com/wildfly/wildfly/releases/tag/40.0.1.Final — JDK 21/UBI 9
+- https://www.wildfly.org/guides/wildfly-ee-10-feature-pack/ — tags de imagens EE10
