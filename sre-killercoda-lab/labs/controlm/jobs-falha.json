@@ -1,0 +1,29 @@
+{
+  "SRE_LAB_CONTROLM_FALHA": {
+    "Type": "Folder",
+    "RunAs": "workbench",
+    "Application": "SRE_LAB",
+    "SubApplication": "INCIDENTE",
+    "Comment": "Simulacao segura: segundo job encerra com exit 42",
+    "JOB_01_PRECHECK": {
+      "Type": "Job:Command",
+      "Command": "echo PRECHECK_OK"
+    },
+    "JOB_02_FALHA": {
+      "Type": "Job:Command",
+      "Command": "sh -c 'echo FALHA_INTENCIONAL; exit 42'"
+    },
+    "JOB_03_VALIDACAO": {
+      "Type": "Job:Command",
+      "Command": "echo VALIDACAO_DEVERIA_AGUARDAR"
+    },
+    "Flow": {
+      "Type": "Flow",
+      "Sequence": [
+        "JOB_01_PRECHECK",
+        "JOB_02_FALHA",
+        "JOB_03_VALIDACAO"
+      ]
+    }
+  }
+}
