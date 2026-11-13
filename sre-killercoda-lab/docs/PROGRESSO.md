@@ -805,3 +805,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Estrutura `Folder` / `Job:Command` / `Flow: {Type: Flow, Sequence: [...]}` confrontada com exemplo oficial `https://github.com/controlm/workbench` e `https://github.com/controlm/automation-api-quickstart/blob/master/control-m/101-create-first-job-flow/AutomationAPISampleFlow.json`, compatível em forma.
 - **Não foi realizado `ctm build`, `ctm run` ou `ctm run status`**: sem CLI/Workbench oficial no KillerCoda, apenas sintaxe JSON e correspondência estrutural. Não declarar experiência real com a BMC até executar tais comandos.
 - Próxima etapa: em PowerShell do Windows local, verificar `wsl --status`, `docker version`, `docker info --format '{{.MemTotal}}'` e uso da porta 8443 antes de tentar Workbench oficial no computador; requer memória disponível suficiente e conta com permissão BMC EPD. Não divulgar tokens.
+
+
+## Control-M — Precheck executado no Linux KillerCoda, nao no Windows (13/11/2026)
+- O usuario executou `wsl --status`, `docker version`, `docker info --format '{{.MemTotal}}'` e `Get-NetTCPConnection` no terminal `root@controlplane` do **Linux KillerCoda**, nao no PowerShell do computador Windows.
+- `wsl: command not found` e `Get-NetTCPConnection: command not found` sao esperados nesse terminal, ja que sao comandos Windows; **nao recomendar apt install wsl nesse Linux**.
+- Docker Client e Docker Engine **29.1.3** estao operacionais no KillerCoda. `docker info --format '{{.MemTotal}}'` reportou **2355339264 bytes (~2,19 GiB de memoria total)**, insuficiente para Control-M Workbench oficial com minimo de ~8 GiB de RAM para container.
+- A plataforma KillerCoda e efemera e utiliza muita memoria em outros componentes; nao tentar instalar BMC Workbench nela.
+- **Proximo passo pendente:** abrir PowerShell nativo no notebook Windows do usuario (fora da janela/terminal KillerCoda) e executar os mesmos prechecks de Windows para WSL2/Docker e porta 8443. Ainda nao sabemos se Windows tem Docker Desktop e WSL2 instalados e funcionando. Recomendar observar recursos disponiveis e garantir autorizacao BMC EPD; nao solicitar credenciais na conversa.
