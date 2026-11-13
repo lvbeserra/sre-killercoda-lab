@@ -109,3 +109,32 @@ Fontes oficiais:
 - https://hub.docker.com/_/tomcat
 - https://docs.wildfly.org/wildfly-container/
 - https://www.wildfly.org/guides/wildfly-ee-10-feature-pack/
+
+
+## Verificacao de capacidade antes de ativar WildFly — 13/11/2026
+
+Nos dois nodes, o usuario observou requests de memoria de **210Mi (9%) e 570Mi (31%)**; limites de memoria de **1364Mi (63%) e 2848Mi (157%)**. Os limites acima de 100% representam overcommit, **nao** uso real de RAM. Os nomes dos nodes nao apareceram no recorte do comando anterior.
+
+A imagem WildFly foi atualizada para `quay.io/wildfly/wildfly-ee-10:latest-jdk21` (EE10/JDK21), e o initContainer passa a dar posse do diretorio do WAR ao UID/GID 1000 usado pela imagem. Essa nova configuracao foi publicada, mas **ainda nao foi testada no KillerCoda**.
+
+Antes da instalacao, avaliar:
+
+~~~bash
+kubectl top nodes
+kubectl top pods -A --sort-by=memory
+kubectl get nodes -o custom-columns='NODE:.metadata.name,MEMORY_ALLOCATABLE:.status.allocatable.memory,CPU_ALLOCATABLE:.status.allocatable.cpu'
+kubectl describe nodes | grep -A 8 'Allocated resources:'
+~~~
+
+Se o Metrics Server nao estiver disponivel, `kubectl top` nao fornece o consumo real; nao deduzir consumo pelos requests/limits. Se houver `MemoryPressure` ou carga excessiva, nao ativar WildFly ainda. O perfil do laboratorio usa request 512Mi e limite 1200Mi para WildFly.
+
+Depois que os dados forem avaliados, executar manualmente:
+
+~~~bash
+cd ~/sre-killercoda-lab
+git pull --rebase origin main
+bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly
+bash sre-killercoda-lab/labs/java-middleware/validate-java.sh
+~~~
+
+A imagem usa tag movel; para ambientes permanentes fixar imagem/digest aprovado apos teste, evitar atualizar sem controle. Nao confundir WildFly comunitario com JBoss EAP comercial.
