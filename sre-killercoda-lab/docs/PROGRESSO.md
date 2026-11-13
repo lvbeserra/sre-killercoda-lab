@@ -583,3 +583,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Criado `docs/MIGRACAO-VIRTUALBOX.md` com proposta Ubuntu Server + k3s, GitHub CLI, storage persistente, rede isolada, backups `pg_dump` e critérios de restauração. A VM VirtualBox/k3s **não** foi criada nem testada.
 - **Ponto crucial:** GitHub guarda arquivos e schema, não dados do PostgreSQL. Em KillerCoda novo o banco será recriado VAZIO; os incidentes antigos não são restaurados sem backup externo. Em VirtualBox, volume durável e backups verificados serão requisitos.
 - **Próximo teste pendente:** usuário deve fazer `git pull --rebase origin main` na sessão existente e `bash iniciar.sh` (pode reexecutar recursos sem eliminar Secret/PVC) para confirmar integração automática no runtime. Em nova sessão, `git clone ... && bash iniciar.sh`.
+
+
+## Novo modulo planejado — DevOps Senior Operacoes GCP (13/11/2026)
+
+- Vaga fornecida pelo usuario com requisitos de L3/War Room P1, GKE/Compute Engine/Cloud Run, IAM/VPC/Cloud Armor, Terraform, GitHub Actions/Cloud Build/ArgoCD, Cloud SQL/Bigtable/PubSub, Cloud Operations/Prometheus/Grafana, FinOps, SLI/SLO, DR, seguranca, Scrum/Kanban, Discovery e mentoria.
+- Criado [TRILHA-GCP-DEVOPS-SENIOR-OPERACOES.md](TRILHA-GCP-DEVOPS-SENIOR-OPERACOES.md), plano de 8 semanas com labs, entregaveis, runbooks, SLOs, War Room e distincao entre experiencia profissional e educacional.
+- Criado [labs/gcp-sre/README.md](../labs/gcp-sre/README.md) e o script [assessment-local.sh](../labs/gcp-sre/assessment-local.sh), auditoria Kubernetes **somente leitura** com verificacao de ferramentas, nodes, pods, deployments, HPA, PVC, RBAC, capacidade e servicos Full Stack.
+- O novo script **ainda nao foi executado pelo usuario**. Primeiro comando: cd ~/sre-killercoda-lab && git pull --rebase origin main && bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
+- GCP real/GKE/Cloud SQL/Bigtable/Cloud Run e custos permanecem no planejamento; **nenhum recurso Google Cloud criado e nenhuma mudanca no iniciar.sh**. A conta/quotas/billing/limpeza precisam ser alinhadas antes.
+- Escopo para notebook de 16GiB: reaproveitar Kubernetes KillerCoda ou Ubuntu K3s VirtualBox. Fazer um assunto de cada vez, sem provisionamento automatico.
