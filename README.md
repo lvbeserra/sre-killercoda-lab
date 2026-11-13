@@ -95,3 +95,22 @@ SRE_ENABLE_FULLSTACK=0 bash iniciar.sh   # pula o Full Stack
 **Persistência:** o GitHub armazena scripts, manifests, schema SQL e anotações, **não** os dados do PostgreSQL. Em nova sessão descartável, o banco será criado com schema vazio. Dados persistentes exigem backup SQL ou volume em disco durável. Nunca versionar credenciais e dumps com dados sensíveis.
 
 **VirtualBox:** requer uma VM com Linux, Kubernetes e armazenamento persistente previamente instalados; `iniciar.sh` restaura workloads no Kubernetes, mas não instala o cluster.
+
+
+## Nova trilha: DevOps Senior — Operacoes GCP / GKE (13/11/2026)
+
+A partir de uma vaga de DevOps Senior GCP, o curso agora inclui um roteiro de **8 semanas**: GCP/IAM/VPC, GKE, Terraform, GitHub Actions/Cloud Build/ArgoCD, observabilidade/SLOs, Cloud SQL/Bigtable/PubSub, FinOps/DevSecOps, disaster recovery e War Rooms P1 com post-mortems e mentoria.
+
+- [Trilha completa GCP](sre-killercoda-lab/docs/TRILHA-GCP-DEVOPS-SENIOR-OPERACOES.md)
+- [Guia do modulo e primeira pratica](sre-killercoda-lab/labs/gcp-sre/README.md)
+- [Script de assessment Kubernetes read-only](sre-killercoda-lab/labs/gcp-sre/assessment-local.sh)
+
+Primeira aula, **sem provisionar recursos GCP**:
+
+~~~bash
+cd ~/sre-killercoda-lab
+git pull --rebase origin main
+bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
+~~~
+
+A trilha GCP e opcional e **nao altera o iniciar.sh**: nenhum projeto GCP, GKE, Cloud SQL ou recurso faturavel sera criado automaticamente. O roteiro e o script foram publicados, mas o novo assessment ainda precisa ser executado pelo usuario.
