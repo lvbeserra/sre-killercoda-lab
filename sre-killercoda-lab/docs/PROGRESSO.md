@@ -813,3 +813,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Docker Client e Docker Engine **29.1.3** estao operacionais no KillerCoda. `docker info --format '{{.MemTotal}}'` reportou **2355339264 bytes (~2,19 GiB de memoria total)**, insuficiente para Control-M Workbench oficial com minimo de ~8 GiB de RAM para container.
 - A plataforma KillerCoda e efemera e utiliza muita memoria em outros componentes; nao tentar instalar BMC Workbench nela.
 - **Proximo passo pendente:** abrir PowerShell nativo no notebook Windows do usuario (fora da janela/terminal KillerCoda) e executar os mesmos prechecks de Windows para WSL2/Docker e porta 8443. Ainda nao sabemos se Windows tem Docker Desktop e WSL2 instalados e funcionando. Recomendar observar recursos disponiveis e garantir autorizacao BMC EPD; nao solicitar credenciais na conversa.
+
+
+## Control-M — precheck PowerShell Windows: WSL e Docker ausentes (13/11/2026)
+- Usuário executou os comandos de pré-check **agora no PowerShell do computador Windows** (não no KillerCoda).
+- `docker info --format '{{.MemTotal}}'` e `docker version` retornaram `docker : O termo 'docker' não é reconhecido`. Não há comando Docker disponível no Windows (não instalado ou ausente do PATH).
+- `wsl --status` retornou `O Subsistema do Windows para Linux não está instalado. Você pode instalar executando 'wsl.exe --install'.`
+- `Get-NetTCPConnection -LocalPort 8443 -State Listen -ErrorAction SilentlyContinue` não exibiu dados, sugerindo nenhum listener identificado na porta naquele instante; isso não garante futura disponibilidade.
+- **Plano de instalação recomendado:** antes de usar o Workbench BMC, abrir PowerShell como administrador e executar `wsl --install`, reiniciar, conferir `wsl --status` e `wsl --list --verbose`. Depois baixar e instalar Docker Desktop via site oficial e verificar `docker version`/ `docker info`. Validar Windows suportado, virtualização firmware e RAM antes de iniciar Docker. Documentação Microsoft: https://learn.microsoft.com/pt-br/windows/wsl/install/ ; Docker: https://docs.docker.com/desktop/setup/install/windows-install/.
+- Controle-M Workbench BMC **continua não instalado**: exige Docker/WSL2 operacionais, ~8 GiB livres para o container e acesso autorizado BMC EPD/Identity Token; não solicitar token no chat nem instalar imagem não oficial. Na máquina de 16GB pode haver pressão de RAM se houver VMs pesadas simultâneas.
+- A próxima resposta do usuário deve conter resultado de `wsl --install` ou `wsl --status`/ `wsl --list --verbose` pós-reinício, para orientar o Docker Desktop. Nenhuma alteração no computador foi realizada pelo assistente.
