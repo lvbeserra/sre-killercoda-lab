@@ -6,6 +6,8 @@ kind: Service
 metadata:
   name: java-jdbc
   namespace: sre-fullstack-lab
+  labels:
+    app: java-jdbc
 spec:
   type: ClusterIP
   selector:
@@ -20,6 +22,8 @@ kind: Deployment
 metadata:
   name: java-jdbc
   namespace: sre-fullstack-lab
+  labels:
+    app: java-jdbc
 spec:
   replicas: 1
   selector:
