@@ -116,3 +116,22 @@ Após a validação do Apache/Tomcat/WildFly e do PostgreSQL, foi publicado [lab
 Não é iniciado automaticamente: para exercitar conscientemente o consumo adicional de memoria, use `bash sre-killercoda-lab/labs/java-jdbc/restore-jdbc.sh` e depois `bash sre-killercoda-lab/labs/java-jdbc/validate-jdbc.sh`. Ainda pendente de teste no KillerCoda.
 
 O lab Java original foi **testado e validado em 13/11/2026**: Apache/Tomcat e WildFly 40.0.1 com JDK21 via imagem baseada em UBI9, compatível com os requisitos de CPU deste KillerCoda. A falha de UBI10 `Fatal glibc error: CPU does not support x86-64-v3` e sua correção estão descritas em `labs/java-middleware/README.md`.
+
+
+## Control-M — Workload Automation e troubleshooting
+
+Trilha prática de Control-M/EM, Server e Agent para a vaga de administracao de ambientes de producao, incluindo jobs, calendarios, scripts, SQL, incidentes, backups, mudanças, migração/upgrade e integração com AWS/Azure.
+
+- [Aula 01 e instalação oficial do Control-M Workbench](labs/controlm/README.md)
+- [Fluxo Job-as-Code de sucesso](labs/controlm/jobs-sucesso.json)
+- [Fluxo Job-as-Code com falha simulada](labs/controlm/jobs-falha.json)
+
+No KillerCoda atual, execute **somente o script educativo Shell**:
+```bash
+cd ~/sre-killercoda-lab
+git pull --rebase origin main
+bash sre-killercoda-lab/labs/controlm/aula01-local.sh
+bash sre-killercoda-lab/labs/controlm/aula01-local.sh --falhar
+```
+
+**O script não é a ferramenta BMC.** Para executar jobs de Control-M real, instalar o Workbench oficial em máquina dedicada com no mínimo 8 GiB **disponíveis para o container**, Docker, portas e acesso autorizado à distribuição BMC EPD. Não há Workbench instalado automaticamente ou testes feitos em ambiente Control-M até esta data.
