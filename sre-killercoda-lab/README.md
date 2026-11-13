@@ -83,3 +83,17 @@ Para executar sem Full Stack: `SRE_ENABLE_FULLSTACK=0 bash iniciar.sh`.
 Para iniciar com banco e frontend, mas sem middleware: `SRE_ENABLE_MIDDLEWARE=0 bash iniciar.sh`.
 
 **KillerCoda:** namespace, Secret, Deployments, StatefulSet e PVC são recriados, mas os incidentes não sobrevivem à destruição da sessão; o schema SQL inicia banco novo e vazio. **VirtualBox:** Kubernetes/StorageClass precisam estar instalados antes do bootstrap; disco virtual persistente e backups SQL permitirão preservar dados entre reinicializações.
+
+
+## Trilha de vagas — DevOps Senior GCP / GKE
+
+Especializacao adicional baseada nos requisitos de Analista DevOps Senior — Operacoes GCP (13/11/2026), focada em troubleshooting L3, GKE, Terraform, CI/CD, redes e IAM, FinOps, observabilidade GCP, SLIs/SLOs, DR, War Room e mentoria.
+
+- [Plano didatico completo (8 semanas)](docs/TRILHA-GCP-DEVOPS-SENIOR-OPERACOES.md)
+- [Laboratorio e comandos](labs/gcp-sre/README.md)
+
+Primeira pratica read-only:
+
+    bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
+
+**Nenhuma infraestrutura GCP e criada por essa trilha.** A integracao em nuvem depende de uma conta/projeto de testes, revisao de custos e autorizacao explicita. O modulo nao e executado pelo bootstrap padrao.
