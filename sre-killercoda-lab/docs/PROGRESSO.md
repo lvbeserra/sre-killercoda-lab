@@ -788,3 +788,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **Conceitos validados:** retorno de processo, dependência sequencial, bloqueio de sucessor quando predecessor não está OK, pasta de logs por execução. Não inferir experiência operacional com Control-M Server, Agent, EM ou Workbench — ainda não instalados.
 - **Próxima prática proposta, pendente de execução:** `cat /tmp/controlm-lab-20261113T213853Z-53777/JOB_02_PROCESSAMENTO.log` e `ls -lh /tmp/controlm-lab-20261113T213853Z-53777/`; confirmar erro intencional, rerun de toda a cadeia Shell sem flag (simulação de recuperação, **não rerun seletivo de job Control-M**). Em produção avaliar idempotência, duplicidade de dados e mudança autorizada antes de recuperar.
 - **Trilha real BMC:** validar Docker/WSL2 e acesso ao Control-M Workbench oficial; depois executar `ctm build/run/status` para os fluxos JSON. Evitar alegar que a simulação equivale ao produto.
+
+
+## Control-M — RCA e recuperacao completa da aula 01 Shell (13/11/2026)
+- Usuário inspecionou o log real gerado pelo simulador: `/tmp/controlm-lab-20261113T213853Z-53777/JOB_02_PROCESSAMENTO.log`, contendo exatamente `ERRO INTENCIONAL: rotina ETL interrompida antes de gerar resultado`. Causa da falha simulada confirmada.
+- Listagem do diretório de falha mostrou somente `JOB_01_PRECHECK.log` (52 bytes) e `JOB_02_PROCESSAMENTO.log` (67 bytes); **não existe log de JOB 03** porque a dependência o bloqueou antes de iniciar.
+- Usuário simulou recuperação pela **nova execução completa da cadeia**, `bash sre-killercoda-lab/labs/controlm/aula01-local.sh`. Resultado: `JOB_01_PRECHECK END OK`, `JOB_02_PROCESSAMENTO END OK`, `JOB_03_VALIDACAO END OK`; `SUCESSO: cadeia de 3 jobs finalizada.` Novas evidências em `/tmp/controlm-lab-20261113T214418Z-65705`.
+- **Competências demonstradas:** leitura de logs de execução, interpretação de ExitCode 42, distinção entre sucessor não executado e job falho, avaliação de dependências e validação de rerun de fluxo didático.
+- **Não afirmar:** que houve rerun seletivo de job na ferramenta Control-M da BMC ou que o Control-M Workbench está instalado. O exercício segue sendo Shell, não produto comercial.
+- Próxima aula: verificar `python3 -m json.tool` nos dois arquivos `labs/controlm/jobs-*.json`, explicar Job-as-Code e `Flow.Sequence`, depois preparar Docker Desktop/WSL2 (em Windows local) e autorização de download via BMC EPD para Workbench real. No Linux KillerCoda atual, não instalar Workbench devido ao mínimo de 8GiB para container.
