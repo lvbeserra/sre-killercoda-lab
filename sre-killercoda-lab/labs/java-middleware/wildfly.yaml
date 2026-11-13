@@ -53,9 +53,11 @@ spec:
         - name: wildfly
           image: quay.io/wildfly/wildfly-ee-10:latest-jdk21
           imagePullPolicy: IfNotPresent
+          # Perfil de LAB: memoria limitada ao testar uma pagina JSP simples.
+          # Não é dimensionamento de produção. Reavaliar se houver OOMKilled.
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: "-XX:MaxRAMPercentage=65.0 -Djava.awt.headless=true"
+            - name: JAVA_OPTS
+              value: "-Xms128m -Xmx256m -XX:MaxMetaspaceSize=192m -Djava.awt.headless=true"
           ports:
             - name: http
               containerPort: 8080
@@ -81,10 +83,10 @@ spec:
           resources:
             requests:
               cpu: 200m
-              memory: 512Mi
+              memory: 256Mi
             limits:
               cpu: "1"
-              memory: 1200Mi
+              memory: 640Mi
           volumeMounts:
             - name: deployments
               mountPath: /opt/jboss/wildfly/standalone/deployments
