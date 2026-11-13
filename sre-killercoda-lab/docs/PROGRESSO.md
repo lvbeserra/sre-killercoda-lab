@@ -643,3 +643,19 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **Confirmado até agora:** recursos Kubernetes implantados e saudáveis; **ainda não foi enviada a saída do teste funcional HTTP** Apache -> Tomcat -> JSP.
 - Próximos comandos: `bash sre-killercoda-lab/labs/java-middleware/validate-java.sh`; após sucesso, `kubectl -n sre-java-lab port-forward --address 0.0.0.0 svc/apache-gateway 8090:80` somente em laboratório isolado, prévia em KillerCoda Traffic/Ports, rota `/tomcat/index.jsp`.
 - Somente depois avaliar memória do cluster antes de ativar WildFly opcional; não usar JBoss EAP comercial sem licenciamento.
+
+## Java Middleware — HTTP Apache → Tomcat JSP validado em Kubernetes (13/11/2026)
+- Usuário executou `bash sre-killercoda-lab/labs/java-middleware/validate-java.sh` com **sucesso real no KillerCoda**.
+- Pods: `apache-gateway-5f6fcb8697-bbfxp` e `tomcat-app-6ff5f656d8-b66rj`, ambos `1/1 Running`, **0 reinícios**; provisionados em `node01` (~5m31s de execução no momento do teste).
+- Deployments `apache-gateway` (imagem `httpd:2.4-alpine`) e `tomcat-app` (imagem `tomcat:10.1-jdk17-temurin`) `1/1 READY / AVAILABLE`; Services `apache-gateway:80` e `tomcat-app:8080`.
+- Teste HTTP por dentro de `apache-gateway` para `http://127.0.0.1/tomcat/index.jsp` retornou:
+  ```text
+  SRE Java Middleware Lab
+  Servidor: Apache Tomcat/10.1.61
+  Status: OK
+  Data UTC: 2026-11-13T20:45:59.149345365Z
+  ```
+- **Comprovado:** proxy reverso Apache HTTP Server → Service Kubernetes → container Tomcat → JSP, sem exposição externa. Resultado funcional da aplicação, não apenas Pod Ready.
+- `WILDFLY: nao instalado, teste ignorado.` Não afirmar que o JBoss/WildFly esteja operacional.
+- Próximo teste: opcional preview via port-forward 8090 na interface KillerCoda; avaliar capacidade real de nodes e consumo para saber se WildFly opcional cabe sem sobrecarregar; estudar logs JVM, deploy WAR e erros 503.
+- Os endereços IP observados são dinâmicos da sessão e não devem ser copiados como configuração persistente.
