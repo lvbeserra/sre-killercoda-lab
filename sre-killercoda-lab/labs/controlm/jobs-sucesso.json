@@ -1,0 +1,29 @@
+{
+  "SRE_LAB_CONTROLM_01": {
+    "Type": "Folder",
+    "RunAs": "workbench",
+    "Application": "SRE_LAB",
+    "SubApplication": "AUTOMACAO",
+    "Comment": "Fluxo basico de jobs ficticios para Control-M Workbench",
+    "JOB_01_PRECHECK": {
+      "Type": "Job:Command",
+      "Command": "echo PRECHECK_OK"
+    },
+    "JOB_02_PROCESSAMENTO": {
+      "Type": "Job:Command",
+      "Command": "echo PROCESSAMENTO_OK"
+    },
+    "JOB_03_VALIDACAO": {
+      "Type": "Job:Command",
+      "Command": "echo VALIDACAO_OK"
+    },
+    "Flow": {
+      "Type": "Flow",
+      "Sequence": [
+        "JOB_01_PRECHECK",
+        "JOB_02_PROCESSAMENTO",
+        "JOB_03_VALIDACAO"
+      ]
+    }
+  }
+}
