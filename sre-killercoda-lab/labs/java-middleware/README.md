@@ -204,3 +204,14 @@ kubectl -n sre-java-lab describe pod -l app=wildfly-app
 - https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/considerations_in_adopting_rhel_10/architectures — requisitos de CPU x86-64-v3
 - https://github.com/wildfly/wildfly/releases/tag/40.0.1.Final — JDK 21/UBI 9
 - https://www.wildfly.org/guides/wildfly-ee-10-feature-pack/ — tags de imagens EE10
+
+
+## Estado final validado — 13/11/2026
+
+Os testes no KillerCoda **confirmaram** Apache httpd (1/1), Tomcat 10.1.61 (1/1) e WildFly 40.0.1.Final EE10/JDK21 (1/1), todos **Running e sem reinicios** no checkpoint. O fluxo HTTP Apache → Tomcat JSP e Apache → WildFly JSP retornou **Status: OK**.
+
+A imagem WildFly correta para esta CPU e **`quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21`** (UBI9). **NAO** usar as refs de `latest-jdk17`/`latest-jdk21` de trechos históricos acima como instrução atual de restauração. A tag UBI10 produziu incompatibilidade `x86-64-v3`.
+
+Medição Kubelet Summary API pós-recuperação em `node01`: WildFly 371Mi, Tomcat 118Mi, Apache 8Mi, memoria estimada disponivel 893Mi. Outro checkpoint confirmou `MemoryPressure=False` em ambos os nodes, além de PostgreSQL + API + frontend íntegros. Risco residual de pouca RAM se novas cargas forem adicionadas.
+
+Próxima aula separada e opcional: [labs/java-jdbc/README.md](../java-jdbc/README.md) (WAR e PostgreSQL JDBC). Ela nao altera este stack Java já validado.
