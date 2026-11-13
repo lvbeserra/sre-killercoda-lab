@@ -148,3 +148,8 @@ Foram adicionados requisitos de continuidade de serviços e Azure Site Recovery 
 - [Plano completo e escopo das novas vagas](TRILHA-DR-ASR-AD-M365-DEVOPS.md).
 - [Módulo DR offline e roteiro para ASR real](../labs/dr-azure/README.md).
 - O simulador DR é conceitual, **não** Azure Site Recovery real; a futura fase com cloud exigirá assinatura sandbox, acesso e aprovação de custos.
+
+
+## Extensao — Operacoes GCP / DevOps Senior (13/11/2026)
+
+Para aprofundar a parte GCP desta trilha hibrida, utilizar o novo [roteiro especifico de Operacoes GCP](TRILHA-GCP-DEVOPS-SENIOR-OPERACOES.md): GKE, VPC, IAM, Compute Engine, Cloud Run, Cloud Storage, Cloud SQL/Bigtable, Pub/Sub, Cloud Armor/VPC Service Controls, Terraform, CI/CD, observabilidade, FinOps, DR, operacao L3 e post-mortems P1. Inclui um [assessment read-only](../labs/gcp-sre/README.md) no Kubernetes local, sem criar recursos no Google Cloud.
