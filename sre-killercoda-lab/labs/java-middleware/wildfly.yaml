@@ -41,6 +41,8 @@ spec:
               mkdir -p /deployments/ROOT.war
               cp /config/index.jsp /deployments/ROOT.war/index.jsp
               touch /deployments/ROOT.war.dodeploy
+              # A imagem WildFly executa como UID/GID 1000.
+              chown -R 1000:1000 /deployments
           volumeMounts:
             - name: deployments
               mountPath: /deployments
@@ -49,7 +51,7 @@ spec:
               readOnly: true
       containers:
         - name: wildfly
-          image: quay.io/wildfly/wildfly-ee-10:latest-jdk17
+          image: quay.io/wildfly/wildfly-ee-10:latest-jdk21
           imagePullPolicy: IfNotPresent
           env:
             - name: JAVA_TOOL_OPTIONS
