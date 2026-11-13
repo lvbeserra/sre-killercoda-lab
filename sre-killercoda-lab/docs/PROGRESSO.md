@@ -635,3 +635,11 @@ sre-web-green-zjtdb   IPv4          8080    192.168.1.142                20s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+## Java Middleware — primeiro rollout Apache/Tomcat confirmado (13/11/2026)
+- Usuário executou `kubectl get nodes`: `controlplane Ready` e `node01 Ready`, ambos Kubernetes v1.37.1, uptime de oito dias (segundo a saída enviada).
+- Em `sre-java-lab`, os Pods `apache-gateway-5f6fcb8697-bbfxp` e `tomcat-app-6ff5f656d8-b66rj` estão `1/1 Running`, `RESTARTS=0`, idade aproximada 3m26s.
+- Services encontrados: `apache-gateway` ClusterIP `10.104.156.121:80` e `tomcat-app` ClusterIP `10.106.108.232:8080`. Não gravar endereços dinâmicos como configuração fixa de próxima sessão.
+- **Confirmado até agora:** recursos Kubernetes implantados e saudáveis; **ainda não foi enviada a saída do teste funcional HTTP** Apache -> Tomcat -> JSP.
+- Próximos comandos: `bash sre-killercoda-lab/labs/java-middleware/validate-java.sh`; após sucesso, `kubectl -n sre-java-lab port-forward --address 0.0.0.0 svc/apache-gateway 8090:80` somente em laboratório isolado, prévia em KillerCoda Traffic/Ports, rota `/tomcat/index.jsp`.
+- Somente depois avaliar memória do cluster antes de ativar WildFly opcional; não usar JBoss EAP comercial sem licenciamento.
