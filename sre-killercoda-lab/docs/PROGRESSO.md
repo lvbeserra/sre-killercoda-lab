@@ -726,3 +726,15 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - No instante anterior à instalação havia ~808Mi disponíveis no node01; agora ~893Mi. **Não inferir que o WildFly liberou RAM**, pois medições são snapshots com mudanças de carga/cache. Métricas de uso efetivo não substituem observação de estabilidade/pressão ao longo do tempo.
 - **Próximo passo, ainda não executado:** confirmar `MemoryPressure=False`, reinícios e status de Pods, `kubectl -n sre-fullstack-lab get pods,pvc`, e executar `labs/fullstack-postgres/validate-fullstack.sh` para assegurar que PostgreSQL/API não foram impactados.
 - Se estáveis, iniciar aula WAR Java + datasource JDBC/PostgreSQL com exercícios separados e controles para simular falhas, sem alterar aplicações produtivas.
+
+
+## INC-SRE-004 — Pos-incidente validado e proxima aula JDBC preparada (13/11/2026)
+- Usuário executou novamente a validação completa pós-recuperação do WildFly.
+- `sre-java-lab`: `apache-gateway`, `tomcat-app` e `wildfly-app` todos **1/1 Running, 0 restarts**. WildFly estava há ~3m57s; Apache/Tomcat há ~32min.
+- `controlplane` e `node01`: `MemoryPressure=False`, `KubeletHasSufficientMemory`.
+- `sre-fullstack-lab`: Pods `incidents-api`, `incidents-web` e `postgres-0` **1/1 Running, 0 restarts**. PVC `data-postgres-0` **Bound**, capacidade 1Gi e StorageClass local-path.
+- `validate-fullstack.sh` passou: SQL `srelab|0` (banco funcional, nenhum incidente nesta sessão); REST `/api/health` retornou `{"status":"ok","database":"connected","test":1}`; `/api/incidents` retornou `{"items":[]}`. Métricas Prometheus da API responderam, incluindo `/readyz` HTTP 200 acumulado 200 e HTTP 503 acumulado 2. **Dois 503 anteriores não indicam necessariamente erro atual**, visto que o health corrente passou. Não há prova ainda da duração da estabilidade a longo prazo.
+- O banco está vazio, de acordo com `SELECT count(*)` e API; PVC existente não prova persistência entre sessões descartadas.
+- **Próxima aula desenvolvida e publicada, mas não executada em runtime:** `labs/java-jdbc/` contém `index.jsp` JDBC somente leitura, `resources.yaml` com novo Tomcat limitado a 384Mi, initContainer que gera um WAR e baixa pgJDBC 42.7.14 do Maven Central, scripts `restore-jdbc.sh`/`validate-jdbc.sh` e README de investigação. A aplicação é instalada **no namespace sre-fullstack-lab** para consumir o Secret do PostgreSQL sem replicar segredos, e é opcional: não altera Tomcat/WildFly já executados.
+- **Próximo comando para o usuário:** `cd ~/sre-killercoda-lab && git pull --rebase origin main && bash sre-killercoda-lab/labs/java-jdbc/restore-jdbc.sh`. Depois `bash sre-killercoda-lab/labs/java-jdbc/validate-jdbc.sh`. Se falhar, coletar logs de `package-war` e `tomcat` e `kubectl describe pod`, sem mexer no PostgreSQL.
+- A instalação depende de conexão HTTPS do Pod com Maven Central para baixar driver; sem rede o initContainer falha e deve ser diagnosticado, não contornado desabilitando TLS. Nenhuma credencial foi versionada.
