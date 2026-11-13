@@ -1,4 +1,5 @@
-# WildFly comunitario com perfil Jakarta EE 10: exercicio OPCIONAL e mais pesado.
+# WildFly 40.0.1 EE10/JDK21 sobre UBI9: laboratorio para CPU sem x86-64-v3.
+# WildFly 41+ (UBI10) exige x86-64-v3; este tag FIXO e legado para compatibilidade.
 # Nao substituir JBoss EAP corporativo por este laboratorio em producao.
 apiVersion: v1
 kind: Service
@@ -61,7 +62,7 @@ spec:
               readOnly: true
       containers:
         - name: wildfly
-          image: quay.io/wildfly/wildfly-ee-10:latest-jdk21
+          image: quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21
           imagePullPolicy: IfNotPresent
           # Perfil de LAB: memoria limitada ao testar uma pagina JSP simples.
           # Não é dimensionamento de produção. Reavaliar se houver OOMKilled.
