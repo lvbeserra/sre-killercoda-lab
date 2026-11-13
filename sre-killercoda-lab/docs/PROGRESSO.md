@@ -659,3 +659,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - `WILDFLY: nao instalado, teste ignorado.` Não afirmar que o JBoss/WildFly esteja operacional.
 - Próximo teste: opcional preview via port-forward 8090 na interface KillerCoda; avaliar capacidade real de nodes e consumo para saber se WildFly opcional cabe sem sobrecarregar; estudar logs JVM, deploy WAR e erros 503.
 - Os endereços IP observados são dinâmicos da sessão e não devem ser copiados como configuração persistente.
+
+
+## Preparacao para WildFly — avaliacao de requests/limits e revisao de imagem (13/11/2026)
+
+- O usuario coletou `kubectl describe nodes | grep -A 8 'Allocated resources:'` para os dois nodes. Saida (sem nomes dos nodes): node do primeiro bloco requests CPU **325m (32%)**, memoria **210Mi (9%)**, limits CPU **100%**, memoria **1364Mi (63%)**; node do segundo bloco requests CPU **445m (44%)**, memoria **570Mi (31%)**, limits CPU **3450m (345%)**, memoria **2848Mi (157%)**.
+- **Interpretacao:** limites somados >100% nao significam RAM/CPU atual utilizada, apenas sobrerreserva potencial. Falta medir uso real com `kubectl top nodes` e `kubectl top pods -A --sort-by=memory`, alem de `MemoryPressure`; metricas podem estar indisponiveis se nao houver Metrics Server.
+- WildFly configurado com request **512Mi**, limit **1200Mi**, request CPU 200m; a soma de requests sugere que pode ser agendavel num node, mas o risco de OOM/pressao nao esta descartado.
+- Ajustado `labs/java-middleware/wildfly.yaml`: imagem EE10 para JDK21 (`quay.io/wildfly/wildfly-ee-10:latest-jdk21`), conforme atualizacao oficial que retirou suporte continuado de JDK17; initContainer agora corrige ownership UID/GID 1000 do volume deploy para permitir arquivo marcador do scanner.
+- **Nao foi feito rollout do WildFly ainda.** Decidir apos resultados de consumo e status do node; validar Apache->WildFly->JSP quando seguro e registrar logs/eventos/uso de memoria.
