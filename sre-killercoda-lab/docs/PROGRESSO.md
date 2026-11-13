@@ -668,3 +668,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - WildFly configurado com request **512Mi**, limit **1200Mi**, request CPU 200m; a soma de requests sugere que pode ser agendavel num node, mas o risco de OOM/pressao nao esta descartado.
 - Ajustado `labs/java-middleware/wildfly.yaml`: imagem EE10 para JDK21 (`quay.io/wildfly/wildfly-ee-10:latest-jdk21`), conforme atualizacao oficial que retirou suporte continuado de JDK17; initContainer agora corrige ownership UID/GID 1000 do volume deploy para permitir arquivo marcador do scanner.
 - **Nao foi feito rollout do WildFly ainda.** Decidir apos resultados de consumo e status do node; validar Apache->WildFly->JSP quando seguro e registrar logs/eventos/uso de memoria.
+
+## Preflight WildFly — Metrics API indisponivel, nodes sem MemoryPressure (13/11/2026)
+- Usuario executou `kubectl top nodes` e `kubectl top pods -A --sort-by=memory`; ambos responderam `error: Metrics API not available`. Nao afirmar consumo real de RAM/CPU sem telemetria.
+- `kubectl get nodes -o wide` mostrou `controlplane` (172.30.1.2) e `node01` (172.30.2.2), ambos `Ready`, Kubernetes v1.37.1, Ubuntu 24.04.5, runtime containerd://2.2.1.
+- `kubectl describe nodes | grep -E 'Name:|MemoryPressure'`: **MemoryPressure=False** em controlplane e node01, com `KubeletHasSufficientMemory`; isto indica ausencia de pressao detectada pelo kubelet, nao garante RAM para qualquer workload.
+- Perfil WildFly em `labs/java-middleware/wildfly.yaml`: request memoria 512Mi, limite 1200Mi. O node01 tinha soma de limites de memoria ~157% da memoria alocavel, embora requests ~31% na observacao anterior; risco de sobrecompromisso.
+- Proximo teste SEM instalar metrics-server: consultar Kubelet Summary API via API server (`kubectl get --raw /api/v1/nodes/NN/proxy/stats/summary`) e verificar `node.memory.workingSetBytes` e `availableBytes`. Esse endpoint pode estar inacessivel por RBAC; se isso ocorrer registrar sem alterar seguranca.
+- Somente depois de observar recursos ou revisar risco, testar WildFly opcional manual (`restore-java.sh --with-wildfly`), validar JSP e monitorar Pod events/OOM. Imagem EE10/JDK21 foi confirmada na documentacao oficial do WildFly.
