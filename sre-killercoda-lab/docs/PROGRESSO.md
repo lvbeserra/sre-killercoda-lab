@@ -704,3 +704,18 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **Correção permanente nos manifestos do lab (publicada, ainda não validada em runtime):** `wildfly.yaml` agora fixa `quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21` (base UBI9, compatível com CPU inferior a x86-64-v3), mantendo perfil 256Mi request/640Mi limit. `restore-java.sh` faz `kubectl scale deployment/wildfly-app --replicas=1` após aplicar YAML para reativar até se tiver sido escalado para zero.
 - Próximos comandos: `cd ~/sre-killercoda-lab && git pull --rebase origin main`; `bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly`; `bash sre-killercoda-lab/labs/java-middleware/validate-java.sh`. Registrar logs, startup, HTTP Apache->WildFly->JSP. Se falhar de novo, logs --previous e pod describe antes de novas mudanças.
 - **Atenção:** versão WildFly 40 antiga não recomendada para produção; fallback apenas laboratório isolado. Migração para máquinas com CPU x86-64-v3 e imagens atuais é a correção de arquitetura de longo prazo.
+
+## INC-SRE-004 — Recuperacao validada Apache → WildFly JSP (13/11/2026)
+- Usuário confirmou funcionalmente a correção do incidente `CrashLoopBackOff` causado por `Fatal glibc error: CPU does not support x86-64-v3`. A imagem de compatibilidade `quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21` permitiu inicializar no KillerCoda.
+- `validate-java.sh` mostrou HTTP de Apache → WildFly → JSP com resposta:
+  ```text
+  SRE Java Middleware Lab
+  Servidor: WildFly 40.0.1.Final (WildFly Core 32.0.2.Final) - 2.4.1.Final
+  Status: OK
+  Data UTC: 2026-11-13T21:10:15.681415850Z
+  VALIDACAO: consultas HTTP realizadas pelo Apache dentro do cluster.
+  ```
+- Pods em `sre-java-lab` após recuperação: `apache-gateway-5f6fcb8697-bbfxp` **1/1 Running, 0 restarts, 29min**; `tomcat-app-6ff5f656d8-b66rj` **1/1 Running, 0 restarts, 29min**; `wildfly-app-58bcd7bcc-z8nrf` **1/1 Running, 0 restarts, 64s**, todos no `node01`.
+- **Confirmado:** HTTP pelo Apache até JSP do WildFly, além de Pods Ready, sem reinícios observados. Não inferir estabilidade de longo prazo nem uso real de memória pós-deploy; isso ainda precisa de observação.
+- **Próxima validação:** consultar `/api/v1/nodes/node01/proxy/stats/summary` para workingSet/availableBytes e `kubectl -n sre-java-lab get pods`/events; buscar OOMKilled, MemoryPressure e manter Python/PostgreSQL saudáveis. Desenvolver exercício de WAR, thread dump/JVM e respostas 503 com proxy como próxima aula.
+- Atenção: WildFly 40.0.1 em UBI 9 é fallback para CPU de laboratório que não expõe x86-64-v3. Em produção avaliar versões suportadas e hardware/virtualização, atualizações de segurança e política de imagens aprovadas.
