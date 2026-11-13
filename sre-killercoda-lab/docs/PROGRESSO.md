@@ -797,3 +797,11 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **Competências demonstradas:** leitura de logs de execução, interpretação de ExitCode 42, distinção entre sucessor não executado e job falho, avaliação de dependências e validação de rerun de fluxo didático.
 - **Não afirmar:** que houve rerun seletivo de job na ferramenta Control-M da BMC ou que o Control-M Workbench está instalado. O exercício segue sendo Shell, não produto comercial.
 - Próxima aula: verificar `python3 -m json.tool` nos dois arquivos `labs/controlm/jobs-*.json`, explicar Job-as-Code e `Flow.Sequence`, depois preparar Docker Desktop/WSL2 (em Windows local) e autorização de download via BMC EPD para Workbench real. No Linux KillerCoda atual, não instalar Workbench devido ao mínimo de 8GiB para container.
+
+
+## Control-M — Aula 02 Job-as-Code JSON sintaxe validada (13/11/2026)
+- No KillerCoda, o usuário fez `git pull --rebase origin main` com Fast-forward `ed70e33..2a80565` e executou `python3 -m json.tool` sobre `sre-killercoda-lab/labs/controlm/jobs-sucesso.json` e `jobs-falha.json`.
+- **Ambos os JSONs válidos sintaticamente**: `SRE_LAB_CONTROLM_01` com jobs `JOB_01_PRECHECK`, `JOB_02_PROCESSAMENTO`, `JOB_03_VALIDACAO` e `Flow.Sequence` correspondente; `SRE_LAB_CONTROLM_FALHA` com `JOB_01_PRECHECK`, `JOB_02_FALHA` com `sh -c 'echo FALHA_INTENCIONAL; exit 42'`, `JOB_03_VALIDACAO` e dependências `Flow.Sequence`. Cada folder traz `Type: Folder`, `RunAs: workbench`, `Job:Command`.
+- Estrutura `Folder` / `Job:Command` / `Flow: {Type: Flow, Sequence: [...]}` confrontada com exemplo oficial `https://github.com/controlm/workbench` e `https://github.com/controlm/automation-api-quickstart/blob/master/control-m/101-create-first-job-flow/AutomationAPISampleFlow.json`, compatível em forma.
+- **Não foi realizado `ctm build`, `ctm run` ou `ctm run status`**: sem CLI/Workbench oficial no KillerCoda, apenas sintaxe JSON e correspondência estrutural. Não declarar experiência real com a BMC até executar tais comandos.
+- Próxima etapa: em PowerShell do Windows local, verificar `wsl --status`, `docker version`, `docker info --format '{{.MemTotal}}'` e uso da porta 8443 antes de tentar Workbench oficial no computador; requer memória disponível suficiente e conta com permissão BMC EPD. Não divulgar tokens.
