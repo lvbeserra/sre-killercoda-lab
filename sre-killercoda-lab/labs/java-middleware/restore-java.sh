@@ -25,6 +25,9 @@ kubectl -n "$NS" rollout status deployment/apache-gateway --timeout=180s
 if [[ "$MODE" == --with-wildfly ]]; then
   echo "=== WILDFLY (opcional / exige memoria extra) ==="
   kubectl apply -f "$DIR/wildfly.yaml"
+  # A instancia pode ter sido pausada com kubectl scale --replicas=0 apos CrashLoopBackOff.
+  # Garante que a recuperacao do laboratorio realmente coloque um Pod no ar.
+  kubectl -n "$NS" scale deployment/wildfly-app --replicas=1
   kubectl -n "$NS" rollout status deployment/wildfly-app --timeout=420s
 else
   echo "WildFly nao iniciado. Para inclui-lo: bash $0 --with-wildfly"
