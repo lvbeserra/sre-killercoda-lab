@@ -1,0 +1,121 @@
+# Aula opcional: um WAR (JSP) + driver JDBC PostgreSQL dentro do Tomcat.
+# Namespace do banco: reaproveita o Secret EXISTENTE sem duplicar credenciais.
+# Este deployment e service sao novos; nao alteram PostgreSQL nem API Python.
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-jdbc
+  namespace: sre-fullstack-lab
+spec:
+  type: ClusterIP
+  selector:
+    app: java-jdbc
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-jdbc
+  namespace: sre-fullstack-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java-jdbc
+  template:
+    metadata:
+      labels:
+        app: java-jdbc
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: package-war
+          image: tomcat:10.1-jdk17-temurin
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-ec"]
+          args:
+            - |
+              mkdir -p /tmp/war/WEB-INF/lib /webapps
+              cp /config/index.jsp /tmp/war/index.jsp
+              echo "Baixando driver pgJDBC 42.7.14 do Maven Central..."
+              curl --fail --location --silent --show-error --retry 3 \
+                --connect-timeout 10 --max-time 90 \
+                "https://repo.maven.apache.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar" \
+                --output /tmp/war/WEB-INF/lib/postgresql.jar
+              cd /tmp/war
+              jar cf /webapps/java-jdbc.war .
+              echo "WAR criado: /webapps/java-jdbc.war"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: app-war
+              mountPath: /webapps
+            - name: app-source
+              mountPath: /config
+              readOnly: true
+      containers:
+        - name: tomcat
+          image: tomcat:10.1-jdk17-temurin
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xms64m -Xmx192m -XX:MaxMetaspaceSize=128m -Djava.awt.headless=true"
+            - name: PGHOST
+              value: postgres
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pg-lab-credentials
+                  key: POSTGRES_DB
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-lab-credentials
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-lab-credentials
+                  key: POSTGRES_PASSWORD
+          ports:
+            - name: http
+              containerPort: 8080
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 48
+          readinessProbe:
+            httpGet:
+              path: /java-jdbc/index.jsp
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 8
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 75m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          volumeMounts:
+            - name: app-war
+              mountPath: /usr/local/tomcat/webapps
+      volumes:
+        - name: app-source
+          configMap:
+            name: java-jdbc-source
+        - name: app-war
+          emptyDir: {}
