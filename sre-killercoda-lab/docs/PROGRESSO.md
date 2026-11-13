@@ -676,3 +676,12 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Perfil WildFly em `labs/java-middleware/wildfly.yaml`: request memoria 512Mi, limite 1200Mi. O node01 tinha soma de limites de memoria ~157% da memoria alocavel, embora requests ~31% na observacao anterior; risco de sobrecompromisso.
 - Proximo teste SEM instalar metrics-server: consultar Kubelet Summary API via API server (`kubectl get --raw /api/v1/nodes/NN/proxy/stats/summary`) e verificar `node.memory.workingSetBytes` e `availableBytes`. Esse endpoint pode estar inacessivel por RBAC; se isso ocorrer registrar sem alterar seguranca.
 - Somente depois de observar recursos ou revisar risco, testar WildFly opcional manual (`restore-java.sh --with-wildfly`), validar JSP e monitorar Pod events/OOM. Imagem EE10/JDK21 foi confirmada na documentacao oficial do WildFly.
+
+## WildFly — memória observada via Kubelet Summary API (13/11/2026)
+- A Kubelet Summary API foi consultada com sucesso via API Server em `/api/v1/nodes/NODE/proxy/stats/summary`, **sem** Metrics Server.
+- `controlplane`: `workingSetBytes` equivalente a **1454 MiB**; `availableBytes` equivalente a **792 MiB**.
+- `node01`: `workingSetBytes` equivalente a **1096 MiB**; `availableBytes` equivalente a **808 MiB**.
+- Estes valores são instantâneos, e a Summary API pode incluir diferença de contabilidade com memória do host e não equivale diretamente à capacidade alocável do scheduler. Não há `MemoryPressure` em ambos segundo inspeção anterior.
+- WildFly opcional foi configurado com **request 512Mi**, **limit 1200Mi** de memória. O limite é maior do que a memória disponível estimada **em qualquer um dos nós**. Isto não impede necessariamente o scheduler de colocar o Pod (scheduler usa requests), mas aumenta o risco se a JVM crescer perto do limite.
+- **Decisão:** não implantar ainda com perfil atual. Próxima medida: ordenar Pods por `pods[].memory.workingSetBytes` na mesma Summary API para identificar cargas opcionais a pausar ou reduzir. Preservar PostgreSQL/Tomcat e não instalar metrics-server automaticamente.
+- Ao liberar RAM e verificar ambiente, avaliar implantação gradual do WildFly e validar Apache -> WildFly -> JSP, com eventos, logs e saúde do node. Nenhuma modificação no cluster foi feita por esta análise.
