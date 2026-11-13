@@ -603,3 +603,35 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Scripts restore-java.sh e validate-java.sh: teste interno HTTP Apache -> Tomcat e, opcionalmente, Apache -> WildFly, com pagina JSP. **Ainda nao executado nem validado pelo usuario no cluster**; nao afirmar sucesso de deploy.
 - Proxima execucao: iniciar o lab pelo iniciar.sh (GitHub CLI automatico, PostgreSQL/API/Nginx restaurados). Depois git pull --rebase origin main; bash sre-killercoda-lab/labs/java-middleware/restore-java.sh; bash sre-killercoda-lab/labs/java-middleware/validate-java.sh; salvar resultados. Testar WildFly quando houver memoria.
 - Proximas evolucoes: WAR de aplicacao real, monitoramento JVM GC/heap/threads, JNDI/JDBC/datasource para PostgreSQL, logs e prova de 503/timeout com proxy, runbook de RCA.
+
+## Checkpoint da sessão — 2026-11-13 20:39:16 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE   VERSION
+controlplane   Ready    control-plane   8d    v1.37.1
+node01         Ready    <none>          8d    v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           20s   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           20s   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           20s   web          busybox:1.36         app=sre-web,track=green
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP              NODE     NOMINATED NODE   READINESS GATES
+pod/drain-demo-89554557b-84ht5   1/1     Running   0          20s   192.168.1.73    node01   <none>           <none>
+pod/drain-demo-89554557b-lpczr   1/1     Running   0          20s   192.168.1.201   node01   <none>           <none>
+pod/web-blue-5c57468c74-dm97n    1/1     Running   0          20s   192.168.1.97    node01   <none>           <none>
+pod/web-blue-5c57468c74-ns8vn    1/1     Running   0          20s   192.168.1.116   node01   <none>           <none>
+pod/web-green-6654db8d7b-kr5w6   1/1     Running   0          20s   192.168.1.142   node01   <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.97.34.228     <none>        80/TCP    20s   app=drain-demo
+service/sre-web         ClusterIP   10.100.53.28     <none>        80/TCP    20s   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.106.207.190   <none>        80/TCP    20s   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                    AGE
+drain-demo-lg696      IPv4          8080    192.168.1.201,192.168.1.73   20s
+sre-web-g2chk         IPv4          8080    192.168.1.97,192.168.1.116   20s
+sre-web-green-zjtdb   IPv4          8080    192.168.1.142                20s
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
