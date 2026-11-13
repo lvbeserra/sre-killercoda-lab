@@ -107,3 +107,12 @@ Nova aula da trilha de infraestrutura SRE: Apache HTTP Server como proxy reverso
 - [Script de restauracao opcional](labs/java-middleware/restore-java.sh)
 
 Execucao apos o bootstrap Kubernetes: bash sre-killercoda-lab/labs/java-middleware/restore-java.sh. Novo modulo publicado, ainda nao validado no runtime do usuario.
+
+
+## Laboratorio JDBC Java (aula opcional)
+
+Após a validação do Apache/Tomcat/WildFly e do PostgreSQL, foi publicado [labs/java-jdbc/README.md](labs/java-jdbc/README.md): novo Tomcat com WAR gerado por initContainer, JSP e driver pgJDBC 42.7.14 para fazer **SELECT somente leitura** em `srelab.incidents`, usando o Secret existente no namespace `sre-fullstack-lab`.
+
+Não é iniciado automaticamente: para exercitar conscientemente o consumo adicional de memoria, use `bash sre-killercoda-lab/labs/java-jdbc/restore-jdbc.sh` e depois `bash sre-killercoda-lab/labs/java-jdbc/validate-jdbc.sh`. Ainda pendente de teste no KillerCoda.
+
+O lab Java original foi **testado e validado em 13/11/2026**: Apache/Tomcat e WildFly 40.0.1 com JDK21 via imagem baseada em UBI9, compatível com os requisitos de CPU deste KillerCoda. A falha de UBI10 `Fatal glibc error: CPU does not support x86-64-v3` e sua correção estão descritas em `labs/java-middleware/README.md`.
