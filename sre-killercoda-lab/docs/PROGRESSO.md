@@ -747,3 +747,35 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **IMPORTANTE:** script Shell e JSONs ainda não foram testados no KillerCoda nem no Control-M real. Os JSONs foram verificados por parse e estrutura via GitHub, mas o `ctm build` necessita de CLI/workbench, ainda indisponível. Nenhuma imagem ou licença BMC foi baixada, nenhuma alteração foi feita no cluster.
 - **Próxima aula para executar AGORA:** `cd ~/sre-killercoda-lab && git pull --rebase origin main && bash sre-killercoda-lab/labs/controlm/aula01-local.sh`. Depois `bash sre-killercoda-lab/labs/controlm/aula01-local.sh --falhar` (termina com exit 42 intencional, JOB03 bloqueado). Coletar logs da pasta `/tmp/controlm-lab-...`.
 - **Próximo passo para Workbench real:** verificar Docker/WSL2 no Windows e acesso EPD, sem compartilhar tokens. Se viável instalar conforme BMC, `ctm environment workbench::add`, `ctm build`, `ctm run`, `ctm run status <runId>`. Nunca afirmar experiência prática Control-M antes de executar de verdade.
+
+## Checkpoint da sessão — 2026-11-13 21:42:16 UTC
+
+Contexto: \`kubernetes-admin@kubernetes\`.
+
+\`\`\`text
+NAME           STATUS   ROLES           AGE   VERSION
+controlplane   Ready    control-plane   8d    v1.37.1
+node01         Ready    <none>          8d    v1.37.1
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES               SELECTOR
+deployment.apps/drain-demo   2/2     2            2           21s   app          python:3.12-alpine   app=drain-demo
+deployment.apps/web-blue     2/2     2            2           21s   web          busybox:1.36         app=sre-web,track=blue
+deployment.apps/web-green    1/1     1            1           21s   web          busybox:1.36         app=sre-web,track=green
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP              NODE     NOMINATED NODE   READINESS GATES
+pod/drain-demo-89554557b-4rtrh   1/1     Running   0          21s   192.168.1.175   node01   <none>           <none>
+pod/drain-demo-89554557b-cc562   1/1     Running   0          21s   192.168.1.44    node01   <none>           <none>
+pod/web-blue-5c57468c74-gsgws    1/1     Running   0          21s   192.168.1.73    node01   <none>           <none>
+pod/web-blue-5c57468c74-z7bgw    1/1     Running   0          21s   192.168.1.110   node01   <none>           <none>
+pod/web-green-6654db8d7b-pnrb6   1/1     Running   0          21s   192.168.1.118   node01   <none>           <none>
+
+NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/drain-demo      ClusterIP   10.105.86.49   <none>        80/TCP    21s   app=drain-demo
+service/sre-web         ClusterIP   10.96.123.57   <none>        80/TCP    21s   app=sre-web,track=blue
+service/sre-web-green   ClusterIP   10.109.25.47   <none>        80/TCP    21s   app=sre-web,track=green
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                    AGE
+drain-demo-zkx26      IPv4          8080    192.168.1.175,192.168.1.44   21s
+sre-web-green-fdhts   IPv4          8080    192.168.1.118                21s
+sre-web-nwv58         IPv4          8080    192.168.1.110,192.168.1.73   21s
+\`\`\`
+
+Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
