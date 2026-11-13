@@ -25,7 +25,7 @@ try {
          PreparedStatement statement = connection.prepareStatement(
              "SELECT current_database(), current_user, count(*) FROM incidents")) {
         statement.setQueryTimeout(5);
-        statement.setReadOnly(true);
+        connection.setReadOnly(true);
         try (ResultSet result = statement.executeQuery()) {
             if (!result.next()) {
                 response.setStatus(503);
