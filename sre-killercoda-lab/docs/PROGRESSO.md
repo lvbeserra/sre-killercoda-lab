@@ -692,3 +692,15 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Alterado `labs/java-middleware/wildfly.yaml` para perfil **mais restrito**, solicitando `256Mi`, limite `640Mi`, JVM `JAVA_OPTS=-Xms128m -Xmx256m -XX:MaxMetaspaceSize=192m -Djava.awt.headless=true`, mantendo WildFly EE10/JDK21 e sem NodePort/LoadBalancer.
 - Em `labs/java-middleware/README.md`, documentado o risco de pouco espaço residual sob consumo máximo e rollback com exclusão apenas de `wildfly.yaml`. **Ainda não foi executado o deploy do WildFly pelo usuário**, portanto não afirmar que funciona.
 - Próximo passo no KillerCoda: `git pull --rebase origin main`, `bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly`, monitorar eventos/logs e validar Apache -> WildFly -> JSP, conferir node MemoryPressure e memoria de trabalho. Se falhar, parar apenas WildFly e preservar Tomcat e PostgreSQL.
+
+
+## INC-SRE-004 — WildFly CrashLoopBackOff causado por CPU sem x86-64-v3 (13/11/2026)
+
+- Usuário confirmou `pwd=/root/sre-killercoda-lab` e `validate-java.sh` presente: erro de `No such file or directory` anterior ocorreu por executar de `/root` em vez da raiz do clone.
+- `wildfly-app-b6c85549f-q4w2d` em `node01` ficou `0/1 CrashLoopBackOff`, 5 reinícios; `kubectl get pods -l app=wildfly-app -o jsonpath` evidenciou `LastState.terminated.reason=Error`, `exitCode=127`.
+- **Prova da causa raiz:** `kubectl logs deploy/wildfly-app -c wildfly --previous --tail=100` retornou exatamente `Fatal glibc error: CPU does not support x86-64-v3`. A imagem `quay.io/wildfly/wildfly-ee-10:latest-jdk21` usa UBI10 recente, com requisito x86-64-v3 segundo a documentação oficial do WildFly 41/RHEL10. Falha anterior à JVM atender porta 8080, logo probe `connection refused` é efeito secundário.
+- InitContainer terminou `Completed / Exit 0` e Apache/Tomcat continuaram `1/1 Running`. Não há indicação de `OOMKilled`. **Não investigar exclusivamente heap/memória como causa.**
+- Mitigação recomendada ao usuário: `kubectl -n sre-java-lab scale deployment/wildfly-app --replicas=0` para interromper crash loops sem afetar outros Deployments.
+- **Correção permanente nos manifestos do lab (publicada, ainda não validada em runtime):** `wildfly.yaml` agora fixa `quay.io/wildfly/wildfly-ee-10:40.0.1.Final-jdk21` (base UBI9, compatível com CPU inferior a x86-64-v3), mantendo perfil 256Mi request/640Mi limit. `restore-java.sh` faz `kubectl scale deployment/wildfly-app --replicas=1` após aplicar YAML para reativar até se tiver sido escalado para zero.
+- Próximos comandos: `cd ~/sre-killercoda-lab && git pull --rebase origin main`; `bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly`; `bash sre-killercoda-lab/labs/java-middleware/validate-java.sh`. Registrar logs, startup, HTTP Apache->WildFly->JSP. Se falhar de novo, logs --previous e pod describe antes de novas mudanças.
+- **Atenção:** versão WildFly 40 antiga não recomendada para produção; fallback apenas laboratório isolado. Migração para máquinas com CPU x86-64-v3 e imagens atuais é a correção de arquitetura de longo prazo.
