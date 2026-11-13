@@ -593,3 +593,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - O novo script **ainda nao foi executado pelo usuario**. Primeiro comando: cd ~/sre-killercoda-lab && git pull --rebase origin main && bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
 - GCP real/GKE/Cloud SQL/Bigtable/Cloud Run e custos permanecem no planejamento; **nenhum recurso Google Cloud criado e nenhuma mudanca no iniciar.sh**. A conta/quotas/billing/limpeza precisam ser alinhadas antes.
 - Escopo para notebook de 16GiB: reaproveitar Kubernetes KillerCoda ou Ubuntu K3s VirtualBox. Fazer um assunto de cada vez, sem provisionamento automatico.
+
+
+## Java Middleware: Apache HTTP Server, Tomcat e WildFly — 13/11/2026
+
+- Usuario solicitou subir o laboratorio no KillerCoda e incluir estudo de quando usar Apache, Tomcat e JBoss. Explicada distincao: Apache HTTP Server = proxy/web; Tomcat = container Servlet/JSP; WildFly = application server comunitario Jakarta EE, **nao e o JBoss EAP comercial**.
+- Publicado modulo opt-in em [labs/java-middleware/](../labs/java-middleware/README.md): namespace sre-java-lab; ConfigMaps de uma pagina JSP Java e de mod_proxy Apache; Deployments + ClusterIP Services Apache HTTP Server 2.4 e Tomcat 10.1; startup/readiness/liveness e requests/limits.
+- Publicado WildFly EE 10 comunitario com JDK 17 **opcional** via --with-wildfly; nao instalar automaticamente porque o KillerCoda tem capacidade pequena. Sem uso de GCP, sem credenciais, sem administrar software corporativo real.
+- Scripts restore-java.sh e validate-java.sh: teste interno HTTP Apache -> Tomcat e, opcionalmente, Apache -> WildFly, com pagina JSP. **Ainda nao executado nem validado pelo usuario no cluster**; nao afirmar sucesso de deploy.
+- Proxima execucao: iniciar o lab pelo iniciar.sh (GitHub CLI automatico, PostgreSQL/API/Nginx restaurados). Depois git pull --rebase origin main; bash sre-killercoda-lab/labs/java-middleware/restore-java.sh; bash sre-killercoda-lab/labs/java-middleware/validate-java.sh; salvar resultados. Testar WildFly quando houver memoria.
+- Proximas evolucoes: WAR de aplicacao real, monitoramento JVM GC/heap/threads, JNDI/JDBC/datasource para PostgreSQL, logs e prova de 503/timeout com proxy, runbook de RCA.
