@@ -1,0 +1,94 @@
+# WildFly comunitario com perfil Jakarta EE 10: exercicio OPCIONAL e mais pesado.
+# Nao substituir JBoss EAP corporativo por este laboratorio em producao.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wildfly-app
+  namespace: sre-java-lab
+spec:
+  type: ClusterIP
+  selector:
+    app: wildfly-app
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wildfly-app
+  namespace: sre-java-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wildfly-app
+  template:
+    metadata:
+      labels:
+        app: wildfly-app
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: prepare-exploded-war
+          image: busybox:1.36
+          command: ["sh", "-ec"]
+          args:
+            - |
+              mkdir -p /deployments/ROOT.war
+              cp /config/index.jsp /deployments/ROOT.war/index.jsp
+              touch /deployments/ROOT.war.dodeploy
+          volumeMounts:
+            - name: deployments
+              mountPath: /deployments
+            - name: jsp
+              mountPath: /config
+              readOnly: true
+      containers:
+        - name: wildfly
+          image: quay.io/wildfly/wildfly-ee-10:latest-jdk17
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=65.0 -Djava.awt.headless=true"
+          ports:
+            - name: http
+              containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /index.jsp
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 72
+          readinessProbe:
+            httpGet:
+              path: /index.jsp
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /index.jsp
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1200Mi
+          volumeMounts:
+            - name: deployments
+              mountPath: /opt/jboss/wildfly/standalone/deployments
+      volumes:
+        - name: jsp
+          configMap:
+            name: java-lab-jsp
+        - name: deployments
+          emptyDir: {}
