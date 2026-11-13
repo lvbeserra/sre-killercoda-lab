@@ -779,3 +779,12 @@ sre-web-nwv58         IPv4          8080    192.168.1.110,192.168.1.73   21s
 \`\`\`
 
 Notas: atualize manualmente o YAML e descreva mudanças importantes antes do próximo checkpoint.
+
+
+## Control-M — aula 01 Shell confirmada em KillerCoda (13/11/2026)
+- Usuário abriu nova sessão KillerCoda, recuperou `~/sre-killercoda-lab` via Git e executou a primeira aula Control-M **didática em Shell**, não o software oficial BMC.
+- Execução normal: `bash sre-killercoda-lab/labs/controlm/aula01-local.sh` => `JOB_01_PRECHECK END OK`, `JOB_02_PROCESSAMENTO END OK`, `JOB_03_VALIDACAO END OK` e `SUCESSO: cadeia de 3 jobs finalizada.` Diretório de logs `/tmp/controlm-lab-20261113T213840Z-53470`.
+- Execução de falha intencional: `bash sre-killercoda-lab/labs/controlm/aula01-local.sh --falhar` => `JOB_01_PRECHECK END OK`, `JOB_02_PROCESSAMENTO END NOTOK (ExitCode=42)`, `JOB_03_VALIDACAO WAIT/BLOQUEADO`. Diretório de logs `/tmp/controlm-lab-20261113T213853Z-53777`.
+- **Conceitos validados:** retorno de processo, dependência sequencial, bloqueio de sucessor quando predecessor não está OK, pasta de logs por execução. Não inferir experiência operacional com Control-M Server, Agent, EM ou Workbench — ainda não instalados.
+- **Próxima prática proposta, pendente de execução:** `cat /tmp/controlm-lab-20261113T213853Z-53777/JOB_02_PROCESSAMENTO.log` e `ls -lh /tmp/controlm-lab-20261113T213853Z-53777/`; confirmar erro intencional, rerun de toda a cadeia Shell sem flag (simulação de recuperação, **não rerun seletivo de job Control-M**). Em produção avaliar idempotência, duplicidade de dados e mudança autorizada antes de recuperar.
+- **Trilha real BMC:** validar Docker/WSL2 e acesso ao Control-M Workbench oficial; depois executar `ctm build/run/status` para os fluxos JSON. Evitar alegar que a simulação equivale ao produto.
