@@ -30,6 +30,16 @@ spec:
         app: wildfly-app
     spec:
       automountServiceAccountToken: false
+      # Preferir worker e evitar carga extra no plano de controle.
+      # Preferencia suave: permite laboratorios de no unico no VirtualBox.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       securityContext:
         fsGroup: 1000
       initContainers:
