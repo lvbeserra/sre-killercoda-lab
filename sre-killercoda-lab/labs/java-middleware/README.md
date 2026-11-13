@@ -138,3 +138,32 @@ bash sre-killercoda-lab/labs/java-middleware/validate-java.sh
 ~~~
 
 A imagem usa tag movel; para ambientes permanentes fixar imagem/digest aprovado apos teste, evitar atualizar sem controle. Nao confundir WildFly comunitario com JBoss EAP comercial.
+
+## Perfil de memória reduzido para o WildFly (13/11/2026)
+
+Kubelet Summary API: `controlplane` com working set **1454 MiB** e available **792 MiB**; `node01` com working set **1096 MiB** e available **808 MiB**. Maiores consumidores no node01: Cilium 345 MiB, Tomcat 120 MiB, Cilium Envoy 58 MiB, API 40 MiB, PostgreSQL 28 MiB e Apache 6 MiB.
+
+**Perfil WildFly ajustado (substitui a configuração antiga de 512Mi/1200Mi):**
+- request de memória: **256Mi**; limite **640Mi**.
+- JVM via `JAVA_OPTS`: `-Xms128m -Xmx256m -XX:MaxMetaspaceSize=192m`.
+- Imagem: `quay.io/wildfly/wildfly-ee-10:latest-jdk21`, servlet JSP simples e volume de deploy `emptyDir`.
+
+O perfil é uma hipótese de dimensionamento para aula simples, **não uma garantia de funcionamento**. Mesmo com o limite de 640Mi, o node01 teria pouca folga se o WildFly consumisse o máximo. Observar o nó e o Pod; em caso de OOMKilled, falhas de readiness ou MemoryPressure, interromper apenas o WildFly e reavaliar o consumo.
+
+Depois de `git pull --rebase origin main`:
+
+~~~bash
+bash sre-killercoda-lab/labs/java-middleware/restore-java.sh --with-wildfly
+bash sre-killercoda-lab/labs/java-middleware/validate-java.sh
+kubectl -n sre-java-lab get pods -o wide
+kubectl -n sre-java-lab get events --sort-by=.lastTimestamp
+kubectl -n sre-java-lab logs deploy/wildfly-app --tail=80
+~~~
+
+Para reverter a implantação do WildFly sem mexer no Tomcat, Apache ou PostgreSQL:
+
+~~~bash
+kubectl -n sre-java-lab delete -f sre-killercoda-lab/labs/java-middleware/wildfly.yaml
+~~~
+
+**Estado:** perfil publicado no GitHub e ainda NÃO validado pelo estudante no KillerCoda.
