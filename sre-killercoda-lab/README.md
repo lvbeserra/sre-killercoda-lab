@@ -97,3 +97,13 @@ Primeira pratica read-only:
     bash sre-killercoda-lab/labs/gcp-sre/assessment-local.sh
 
 **Nenhuma infraestrutura GCP e criada por essa trilha.** A integracao em nuvem depende de uma conta/projeto de testes, revisao de custos e autorizacao explicita. O modulo nao e executado pelo bootstrap padrao.
+
+
+## Laboratorio de middleware Java: Apache, Tomcat e WildFly
+
+Nova aula da trilha de infraestrutura SRE: Apache HTTP Server como proxy reverso, Tomcat para Servlet/JSP e WildFly (upstream comunitario de JBoss EAP) para Jakarta EE. Implantacao isolada no namespace sre-java-lab, sem porta publica; WildFly opcional porque exige mais RAM.
+
+- [Guia de operacao e troubleshooting](labs/java-middleware/README.md)
+- [Script de restauracao opcional](labs/java-middleware/restore-java.sh)
+
+Execucao apos o bootstrap Kubernetes: bash sre-killercoda-lab/labs/java-middleware/restore-java.sh. Novo modulo publicado, ainda nao validado no runtime do usuario.
