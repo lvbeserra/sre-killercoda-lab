@@ -719,3 +719,10 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - **Confirmado:** HTTP pelo Apache até JSP do WildFly, além de Pods Ready, sem reinícios observados. Não inferir estabilidade de longo prazo nem uso real de memória pós-deploy; isso ainda precisa de observação.
 - **Próxima validação:** consultar `/api/v1/nodes/node01/proxy/stats/summary` para workingSet/availableBytes e `kubectl -n sre-java-lab get pods`/events; buscar OOMKilled, MemoryPressure e manter Python/PostgreSQL saudáveis. Desenvolver exercício de WAR, thread dump/JVM e respostas 503 com proxy como próxima aula.
 - Atenção: WildFly 40.0.1 em UBI 9 é fallback para CPU de laboratório que não expõe x86-64-v3. Em produção avaliar versões suportadas e hardware/virtualização, atualizações de segurança e política de imagens aprovadas.
+
+## INC-SRE-004 — Uso de memoria pos-recuperacao WildFly (13/11/2026)
+- Usuário executou Kubelet Summary API em node01 após sucesso do fluxo Apache → WildFly 40.0.1.Final → JSP. Memória disponível estimada do nó: **893 MiB**.
+- Working set de Pods em `sre-java-lab`: WildFly **371 MiB**, Tomcat **118 MiB**, Apache HTTP Server **8 MiB**, total **497 MiB**. Configuração do WildFly `requests.memory=256Mi`, `limits.memory=640Mi`; 371/640 ≈ 58% do limite, margem instantânea ≈269Mi dentro do limite.
+- No instante anterior à instalação havia ~808Mi disponíveis no node01; agora ~893Mi. **Não inferir que o WildFly liberou RAM**, pois medições são snapshots com mudanças de carga/cache. Métricas de uso efetivo não substituem observação de estabilidade/pressão ao longo do tempo.
+- **Próximo passo, ainda não executado:** confirmar `MemoryPressure=False`, reinícios e status de Pods, `kubectl -n sre-fullstack-lab get pods,pvc`, e executar `labs/fullstack-postgres/validate-fullstack.sh` para assegurar que PostgreSQL/API não foram impactados.
+- Se estáveis, iniciar aula WAR Java + datasource JDBC/PostgreSQL com exercícios separados e controles para simular falhas, sem alterar aplicações produtivas.
