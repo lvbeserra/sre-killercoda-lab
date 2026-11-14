@@ -143,3 +143,19 @@ Os JSONs seguem a sintaxe oficial **`Folder`**, **`Job:Command`** e **`Flow.Sequ
 - https://documents.bmc.com/supportu/API/Monthly/en-US/Documentation/API_Installation.htm (instalação BMC)
 - https://github.com/controlm/automation-api-quickstart/blob/master/control-m/101-create-first-job-flow/AutomationAPISampleFlow.json (JSON de fluxo)
 - https://docs.bmc.com/xwiki/bin/view/Control-M-Orchestration/Control-M/workloadautomation/Control-M-Automation-API/ctmapi921/Tutorials/Tutorial-Creating-your-first-job-flow/
+
+
+## Manual detalhado Control-M/Server 9.0.27
+
+Novo manual de instalação e administração real da edição BMC Control-M/Server 9.0.27 no Linux, com arquitetura, dimensionamento, RHEL 9, requisitos, conta dedicada, Java externo, CheckReq, setup.sh, instalação silenciosa por XML gerado, PostgreSQL BMC, EM/Agent, portas/TLS, systemd, troubleshooting, backup, upgrade e rollback.
+
+- [Manual completo em Markdown](MANUAL-INSTALACAO-CONTROL-M-SERVER-LINUX.md)
+- [Script read-only de pré-check da VM Linux](precheck-server-linux.sh)
+
+No **servidor Linux dedicado** autorizado (NÃO no Kubernetes/KillerCoda atual), depois de baixar este repositório:
+
+    bash sre-killercoda-lab/labs/controlm/precheck-server-linux.sh
+
+**Cuidado:** a plataforma completa BMC não é gratuita nem pública; requer licença/evaluation e mídia oficial via EPD, com requisitos mínimos do Control-M 9.0.27: Server 4 vCPU, RAM 8 GiB (+4 GiB para PostgreSQL local), 40 GiB disco; Full EM+Server 20 GiB RAM (+4 GiB para DB local), 100 GiB disco. A máquina pessoal Windows com 16 GiB não possui folga recomendada para o Full.
+
+O manual foi criado e revisado contra fontes oficiais, porém **a instalação não foi executada** no ambiente do usuário: falta mídia/contrato autorizado e VM dedicada.
