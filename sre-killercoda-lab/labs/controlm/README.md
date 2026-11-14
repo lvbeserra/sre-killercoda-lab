@@ -159,3 +159,18 @@ No **servidor Linux dedicado** autorizado (NÃO no Kubernetes/KillerCoda atual),
 **Cuidado:** a plataforma completa BMC não é gratuita nem pública; requer licença/evaluation e mídia oficial via EPD, com requisitos mínimos do Control-M 9.0.27: Server 4 vCPU, RAM 8 GiB (+4 GiB para PostgreSQL local), 40 GiB disco; Full EM+Server 20 GiB RAM (+4 GiB para DB local), 100 GiB disco. A máquina pessoal Windows com 16 GiB não possui folga recomendada para o Full.
 
 O manual foi criado e revisado contra fontes oficiais, porém **a instalação não foi executada** no ambiente do usuário: falta mídia/contrato autorizado e VM dedicada.
+
+
+## Instalação tradicional COMPLETA (EM + Server + Agent + PostgreSQL)
+
+**Novo roteiro prático passo a passo (14/11/2026):**
+
+- [GUIA-FULL-INSTALLATION-PASSO-A-PASSO.md](GUIA-FULL-INSTALLATION-PASSO-A-PASSO.md) — VM Full Linux 9.0.27, 24 GiB RAM + 4vCPU + 100 GB disco, pré-requisitos RHEL, conta tcsh, Java externo, EPD, CheckReq \`ONE\`, instalador oficial \`setup.sh\`, configuração EM/Server/Agent/PostgreSQL, Web HTTPS, primeiro job e validação/recuperação, mais variante distribuída para produção.
+- [precheck-full-linux.sh](precheck-full-linux.sh) — inventário read-only próprio do curso, **não** é o CheckReq oficial BMC.
+
+No Linux **do servidor dedicado** (não no KillerCoda do usuário), depois de clonar o repositório:
+\`\`\`bash
+bash sre-killercoda-lab/labs/controlm/precheck-full-linux.sh
+\`\`\`
+
+A BMC requer licenciamento/trial e mídia oficial EPD; o programa proprietário **ainda não foi instalado pelo usuário**. Full Installation é recomendada pela BMC para teste, arquitetura distribuída para produção. O manual anterior \`MANUAL-INSTALACAO-CONTROL-M-SERVER-LINUX.md\` permanece para **Server-only**, não confundir.
