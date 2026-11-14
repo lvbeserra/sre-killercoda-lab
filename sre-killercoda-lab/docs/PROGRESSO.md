@@ -835,3 +835,13 @@ Notas: atualize manualmente o YAML e descreva mudanças importantes antes do pr�
 - Publicado [precheck-server-linux.sh](../labs/controlm/precheck-server-linux.sh) que apenas lê recursos da VM, sem mudar serviços.
 - Criado PDF local para leitura como anexo de conversa (arquivo no GitHub Markdown é a versão completa/atualizável).
 - **Status:** manual e preflight PUBLICADOS e **não executados em servidor real**. Próximo requisito operacional: obter acesso/licença ao BMC EPD e VM Linux homologada; realizar pré-check e validar instalador oficial, sem divulgar credenciais nem causar custos não aprovados.
+
+
+## Control-M — roteiro FULL tradicional Linux 9.0.27 preparado (14/11/2026)
+
+- Usuário pediu explicitamente mostrar **instalação tradicional completa passo a passo** (EM, Server, Agent e banco). Não é mais apenas o Server-only, tratado em manual anterior.
+- Verificada documentação BMC oficial 9.0.27 publicada em 10–13/11/2026: \`Installing_Control-M_on_UNIX.htm\`, \`Introduction_to_Control-M_Installation.htm\`, \`Control-M_full_installation_system_requirements.htm\`, \`Control-M_pre-installation_procedures_on_UNIX.htm\`, \`Java_Installation.htm\`, \`Control-M_Post-installation_Procedures_on_UNIX.htm\`.
+- Referência Full Small x86_64: **4vCPU, RAM 20 GB + 4 GB se PostgreSQL local (24GB), 100GB disco**, swap à parte (~1,5x RAM recomendado). Full indicado para **LAB**, distribuído para produção. BMC Trial Full precisa ser removido para migrar para edição produtiva.
+- Novo guia detalhado: \`labs/controlm/GUIA-FULL-INSTALLATION-PASSO-A-PASSO.md\`, fases 0–10: VM, sizing, SO, tcsh, usuário, Java, EPD, \`checkReqRun.sh -product=ONE -memory_model=SMALL -database=PostgreSQL\`, \`./setup.sh\` -> **Control-M 9.0.27 Full Installation**, opções de banco e TLS, logs, pós-instalação, Agent local, UI HTTPS (porta se 8443 configurada), primeiro job \`/usr/bin/date -u\`, falha intencional em job isolado, backup, hardening e instalação distribuída.
+- Script pré-check read-only \`labs/controlm/precheck-full-linux.sh\`: CPU x86_64, >=4vCPU, >=24GiB RAM (critério conservador), >=100GiB livres em /opt (volume pretendido), Java/tcsh/tempo; **não** altera sistema nem substitui CheckReq BMC.
+- **Nenhuma VM foi criada, nenhum pagamento/licença foi solicitado e nenhum binário BMC foi instalado.** O notebook Windows do usuário com 16GB e o KillerCoda com ~2GiB não atendem a Full. Próximo pré-requisito: servidor dedicado aprovado e acesso ao BMC EPD para receber a mídia legítima; seguir cada passo em VM real com validação de saída, sem expor credenciais.
