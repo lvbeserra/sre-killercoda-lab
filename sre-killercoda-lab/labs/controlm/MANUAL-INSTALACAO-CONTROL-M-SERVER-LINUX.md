@@ -457,3 +457,54 @@ Para múltiplas instalações iguais, a opção **-silent XML** exige arquivo ge
 12. **Portal de download autorizado**: https://www.bmc.com/available/edownloads.html
 
 **Observações finais:** as notas online da BMC podem mudar; valide sempre os instaladores e as Release Notes associadas ao contrato/patch efetivo. Este manual não ensina contornar licenças. Para avaliação, solicite Trial Full oficial e hardware apropriado.
+
+
+## Apêndice A. Exemplo integral de unit systemd do Server
+
+**Aplicar SOMENTE se o Server já estiver instalado, scripts abaixo existirem e a documentação do pacote confirmar os mesmos caminhos.** A BMC 9.0.27 publica este modelo para Red Hat Enterprise Linux 8/9/10, Oracle Linux 8 e SUSE 15. Não usar a unit se HA/cluster tiver gerenciamento próprio.
+
+**1. Inspeção prévia — não altera serviços:**
+
+    sudo test -x /opt/ctmuser/ctm_server/data/rc.ctmuser && echo "rc OK"
+    for f in shut_ca shut_ctm shutdb shut_kafka; do
+      sudo test -x "/opt/ctmuser/ctm_server/scripts/$f" || echo "PENDENTE: $f"
+    done
+
+**2. Criar arquivo da unit como root (somente após inspecionar scripts):**
+
+    sudo tee /etc/systemd/system/CtmServer.service >/dev/null <<'UNIT'
+    [Unit]
+    Description=Control-M Server 9.0.27
+    After=systemd-user-sessions.service multi-user.target network.target
+
+    [Service]
+    Type=forking
+    RemainAfterExit=yes
+    ExecStart=/bin/sh -c /opt/ctmuser/ctm_server/data/rc.ctmuser
+    ExecStop=/usr/bin/su - ctmuser -c '/opt/ctmuser/ctm_server/scripts/shut_ca ; /opt/ctmuser/ctm_server/scripts/shut_ctm -CA; sleep 10 ; /opt/ctmuser/ctm_server/scripts/shutdb; /opt/ctmuser/ctm_server/scripts/shut_kafka'
+
+    [Install]
+    WantedBy=multi-user.target
+    UNIT
+
+**3. Validar, carregar e habilitar sem reiniciar a VM:**
+
+    sudo chmod 644 /etc/systemd/system/CtmServer.service
+    sudo systemd-analyze verify /etc/systemd/system/CtmServer.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable CtmServer.service
+    sudo systemctl status CtmServer.service --no-pager
+
+**4. Subir Server (somente com janela/autorização e estado prévio conhecido):**
+
+    sudo systemctl start CtmServer.service
+    sudo systemctl status CtmServer.service --no-pager
+    sudo journalctl -u CtmServer.service -n 80 --no-pager
+
+**5. Parada (somente após confirmar jobs ativos/contingência):**
+
+    # NÃO execute em produção sem mudança aprovada!
+    sudo systemctl stop CtmServer.service
+
+**Advertência:** o exemplo acompanha o modelo da BMC e não foi testado em instalação real neste curso. Em especial, não assumir que a presença da unit garante que o banco, Agent e EM estejam saudáveis: validar também ctm_menu, processos, logs, portas, banco, Agent e jobs inofensivos. Os comandos de parada encerram componentes do Control-M e do banco de dados e podem interromper jobs.
+
