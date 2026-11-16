@@ -8,6 +8,8 @@
 - Aula 01 EXECUTADA COM SUCESSO: bucket curriculos-lab, upload teste.txt, filas curriculos-processar e curriculos-dlq, envio e recebimento SQS.
 - Evidências enviadas pelo Luiz no chat. Arquivos de instalação e scripts persistem aqui; estado AWS emulado NÃO persiste.
 
+**Observação:** o bootstrap de recuperação está publicado, mas ainda precisa ser validado na próxima sessão nova; a execução manual da Aula 01 já foi comprovada.
+
 ## Recuperar Aula 01 em qualquer Ubuntu/KillerCoda novo
 
 Abra o terminal de um Ubuntu x86_64 com acesso à Internet e permissão root/sudo. Execute esta linha única:
