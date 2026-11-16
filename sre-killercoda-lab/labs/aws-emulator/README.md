@@ -8,7 +8,7 @@
 - Aula 01 EXECUTADA COM SUCESSO: bucket curriculos-lab, upload teste.txt, filas curriculos-processar e curriculos-dlq, envio e recebimento SQS.
 - Evidências enviadas pelo Luiz no chat. Arquivos de instalação e scripts persistem aqui; estado AWS emulado NÃO persiste.
 
-**Observação:** o bootstrap de recuperação está publicado, mas ainda precisa ser validado na próxima sessão nova; a execução manual da Aula 01 já foi comprovada.
+**Validação do bootstrap em 16/11/2026:** Luiz executou o script de ponta a ponta, com todas as cinco etapas OK, AWS Emulator 1.0.471 e AWS CLI 2.40.4 reconhecidos, S3 e SQS testados e mensagem recebida. **Esse teste foi feito na mesma sessão, com o emulador já ativo e bucket preexistente.** O primeiro boot em uma sessão completamente nova ainda está pendente. A leitura SQS retornou uma mensagem de execução anterior, pois o teste não a exclui da fila.
 
 ## Recuperar Aula 01 em qualquer Ubuntu/KillerCoda novo
 
