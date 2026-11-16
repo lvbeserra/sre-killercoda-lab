@@ -94,3 +94,20 @@ async def upload_resume(file: UploadFile = File(...)):
         "s3_key": key,
         "sqs_message_id": sent["MessageId"],
     }
+
+
+@app.get("/console", include_in_schema=False)
+def console_page():
+    """Interface web local de consulta ao laboratorio."""
+    from pathlib import Path
+    from fastapi.responses import FileResponse
+
+    return FileResponse(Path(__file__).with_name("console.html"), media_type="text/html")
+
+
+@app.get("/console/state", include_in_schema=False)
+def console_state():
+    """Resumo S3, SQS, PostgreSQL e workers, sem mutacoes."""
+    from console_backend import snapshot
+
+    return snapshot(clients)
