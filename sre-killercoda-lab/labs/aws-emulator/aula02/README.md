@@ -1,6 +1,6 @@
 # Aula 02: FastAPI -> AWS Emulator S3 -> AWS Emulator SQS
 
-Status em 16/11/2026: **TESTE DA API APROVADO** pelo Luiz em Ubuntu/KillerCoda: GET /health => status ok; GET /ready => ready (conta emulada 000000000000); PDF ficticio de 607 bytes gerado; POST /resumes => HTTP 202 Accepted, job_id ab4ee810-c9df-4f98-97c7-5da3110fda1e, s3_key uploads/ab4ee810-c9df-4f98-97c7-5da3110fda1e.pdf, sqs_message_id 6c64c84e-2655-4d57-987d-26542b8ac17d. **Conferencia direta por AWS CLI de get-object/recebimento dessa mensagem ainda pendente.** Aula 01 S3/SQS previamente aprovada.
+Status em 16/11/2026: **TESTE DA API APROVADO** pelo Luiz em Ubuntu/KillerCoda: GET /health => status ok; GET /ready => ready (conta emulada 000000000000); PDF ficticio de 607 bytes gerado; POST /resumes => HTTP 202 Accepted, job_id ab4ee810-c9df-4f98-97c7-5da3110fda1e, s3_key uploads/ab4ee810-c9df-4f98-97c7-5da3110fda1e.pdf, sqs_message_id 6c64c84e-2655-4d57-987d-26542b8ac17d. **VALIDACAO PONTA A PONTA CONCLUIDA**: aws s3 ls mostrou uploads/ab4ee810-c9df-4f98-97c7-5da3110fda1e.pdf (607 bytes); aws s3 cp recuperou arquivo; cmp confirmou igualdade byte a byte; aws sqs receive-message exibiu MessageId 6c64c84e-2655-4d57-987d-26542b8ac17d com o mesmo job_id, bucket e key. A mensagem continua na fila por falta de worker/delete-message. Aula 01 S3/SQS previamente aprovada.
 
 ## Arquitetura
 
