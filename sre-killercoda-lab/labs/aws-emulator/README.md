@@ -81,3 +81,15 @@ bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula03/start-work
 ```
 
 Importante: configurar 3 tentativas e DLQ e assunto da Aula 04; ainda nao implementado.
+
+## Console web do laboratorio (Aula 03 complementar)
+
+Painel read-only com S3, SQS, PostgreSQL e dois workers, exposto separadamente na porta 8001 do KillerCoda.
+
+```bash
+bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula02/start-console.sh
+```
+
+No KillerCoda abra Traffic / Ports e selecione 8001; acesse /console no link retornado.
+Detalhes: [aula02/CONSOLE.md](aula02/CONSOLE.md).
+Este painel ainda precisa ser validado no navegador. Nao contem comandos de alteracao ou exclusao de recursos.
