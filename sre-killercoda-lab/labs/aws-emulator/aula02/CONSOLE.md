@@ -1,6 +1,6 @@
 # Console web do AWS Emulator - SRE Lab
 
-STATUS: codigo publicado em 16/11/2026; acesso ao navegador ainda precisa ser testado pelo Luiz no Killercoda.
+STATUS em 16/11/2026: VALIDADO EM NAVEGADOR pelo Luiz no KillerCoda (Traffic/Ports host 1 porta 8001, rota /console). Print confirmado: 1 bucket S3, 2 filas SQS, 1 job no PostgreSQL, 2 workers ativos; bucket curriculos-lab exibiu teste.txt (34 B) e PDF de 607 B; fila curriculos-dlq exibiu 0/0 e curriculos-processar exibiu 0 visiveis/1 em processamento (contador aproximado de mensagem in-flight, nao necessariamente job ativo). /health e /console/state retornaram HTTP 200. A DLQ ainda nao tem redrive policy configurada.
 
 ## O que mostra
 
