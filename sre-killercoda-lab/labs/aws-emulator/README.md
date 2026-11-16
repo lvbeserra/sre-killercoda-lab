@@ -1,44 +1,57 @@
-# Laboratorio AWS Emulator - KillerCoda Ubuntu
+# Laboratório AWS Emulator — recuperação em um comando
 
-Status 16/11/2026: Luiz instalou com sucesso AWS Emulator 1.0.471 e iniciou em HTTPS 127.0.0.1:9297 (logs fornecidos na conversa). Testes S3/SQS pendentes.
+## Status real em 16/11/2026
 
-## Retomar depois de expirar o KillerCoda
+- Ubuntu 24.04 (KillerCoda), AWS Emulator 1.0.471 iniciado em HTTPS 127.0.0.1:9297.
+- AWS CLI 2.40.4 instalado; assinatura GPG do instalador verificada.
+- Identidade do AWS Emulator confirmada: Account 000000000000.
+- Aula 01 EXECUTADA COM SUCESSO: bucket curriculos-lab, upload teste.txt, filas curriculos-processar e curriculos-dlq, envio e recebimento SQS.
+- Evidências enviadas pelo Luiz no chat. Arquivos de instalação e scripts persistem aqui; estado AWS emulado NÃO persiste.
 
-Abra um Ubuntu novo e execute:
+## Recuperar Aula 01 em qualquer Ubuntu/KillerCoda novo
 
-    git clone https://github.com/lvbeserra/sre-killercoda-lab.git
-    cd sre-killercoda-lab
-    bash sre-killercoda-lab/labs/aws-emulator/install-ubuntu.sh
+Abra o terminal de um Ubuntu x86_64 com acesso à Internet e permissão root/sudo. Execute esta linha única:
 
-Se o repositorio ja existir, entre nele e use git pull --rebase origin main (somente com alteracoes locais salvas).
+```bash
+if [ -d "$HOME/sre-killercoda-lab/.git" ]; then git -C "$HOME/sre-killercoda-lab" pull --ff-only origin main; else git clone https://github.com/lvbeserra/sre-killercoda-lab.git "$HOME/sre-killercoda-lab"; fi && bash "$HOME/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/bootstrap.sh"
+```
 
-Terminal 1: inicie e mantenha aberto:
+O comando busca a versão do GitHub, instala AWS Emulator e AWS CLI v2 se estiverem ausentes, inicia o emulador local, configura credenciais fictícias e recria os recursos S3 e SQS com um teste automático. Se a porta 9297 estiver ocupada por outro serviço, o script aborta sem interrompê-lo.
 
-    aws-emulator --telemetry off
+Se estiver trabalhando em um repositório com modificações próprias, faça commit/stash ou salve suas alterações antes de atualizar. O comando git pull --ff-only não força sobrescrita.
 
-Terminal 2: tenha AWS CLI v2 instalado. Fonte oficial: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+## Usar AWS CLI depois que o bootstrap terminar
 
-    source sre-killercoda-lab/labs/aws-emulator/env.sh
-    aws sts get-caller-identity
-    bash sre-killercoda-lab/labs/aws-emulator/lab01-s3-sqs.sh
+```bash
+source "$HOME/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/env.sh"
+aws sts get-caller-identity
+aws s3 ls
+aws sqs list-queues
+```
 
-## Seguranca e persistencia
+## Scripts versionados
 
-- O emulador usa a conta ficticia 000000000000; o script aborta se detectar outra.
-- NUNCA commitar ~/.aws, certificados, chaves AWS reais, curriculos reais ou dados pessoais.
-- O estado dos recursos AWS emulados e em memoria: desaparece quando o emulador para.
-- KillerCoda e temporario. O GitHub guarda estes scripts e documentos, NAO o binario instalado nem as filas.
-- O emulador e para desenvolvimento/testes, NAO para producao nem auditoria de politicas IAM.
+- bootstrap.sh — restaura a Aula 01 em um passo.
+- install-ubuntu.sh — instalação do pacote AWS Emulator oficial.
+- env.sh — configuração local do SDK/CLI; remove possíveis credenciais AWS reais do shell.
+- lab01-s3-sqs.sh — criação S3/SQS e teste funcional; aborta sem Account 000000000000.
 
-## Proximos labs
+## Restrições e segurança
 
-1. FastAPI para receber PDF.
-2. S3 + SQS com dois workers.
-3. PostgreSQL + idempotencia.
-4. Retries, redrive para DLQ e troubleshooting.
-5. Extracao PDF local gratuita; integracao com IA externa opcional e possivelmente cobrada.
+- O estado do AWS Emulator é volátil: ao encerrar o processo ou expirar o KillerCoda, buckets/filas são apagados. O script os recria, mas NÃO recupera dados anteriores.
+- O GitHub armazena scripts e documentação, não os binários, chaves, certificados nem dados de produção.
+- Não inclua em commits credenciais de ~/.aws, PDFs de currículos reais ou dados pessoais.
+- AWS Emulator é adequado para desenvolvimento/testes e não substitui AWS para validar segurança/IAM.
+- O comando automatiza apenas este laboratório AWS Emulator; não restaura clusters Kubernetes, Control-M ou outros projetos não incluídos no script.
 
-Fontes:
-https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html
-https://docs.aws.amazon.com/emulator/latest/userguide/point-sdk-to-emulator.html
-https://github.com/aws/aws-emulator
+## Próximos laboratórios (AINDA NÃO IMPLEMENTADOS)
+
+1. FastAPI para receber PDFs e publicar no S3/SQS.
+2. Dois workers em paralelo, PostgreSQL, idempotência.
+3. Retries/DLQ e troubleshooting.
+4. Infra como código, GitHub Actions e integração opcional com IA.
+
+Documentação oficial:
+- https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html
+- https://docs.aws.amazon.com/emulator/latest/userguide/point-sdk-to-emulator.html
+- https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
