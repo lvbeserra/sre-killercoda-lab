@@ -45,6 +45,10 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
 <div class="stat"><span>FILAS SQS</span><strong id="stat-queues">—</strong></div>
 <div class="stat"><span>JOBS NO POSTGRESQL</span><strong id="stat-jobs">—</strong></div>
 <div class="stat"><span>WORKERS ATIVOS</span><strong id="stat-workers">—</strong></div>
+<div class="stat"><span>INSTÂNCIAS EC2</span><strong id="stat-instances">—</strong></div>
+<div class="stat"><span>VPCS</span><strong id="stat-vpcs">—</strong></div>
+<div class="stat"><span>SUBNETS</span><strong id="stat-subnets">—</strong></div>
+<div class="stat"><span>SECURITY GROUPS</span><strong id="stat-sgs">—</strong></div>
 </div>
 <div class="layout">
 <section>
@@ -63,6 +67,22 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
 <h2>Workers · Execução</h2><p class="description">Estado de dois processos e últimas linhas de seus logs.</p>
 <div id="workers" class="empty">Carregando...</div>
 </section>
+<section>
+<h2>EC2 · Instâncias simuladas</h2><p class="description">Metadados da API EC2: não são máquinas virtuais reais e não aceitam SSH.</p>
+<div id="instances" class="empty">Carregando...</div>
+</section>
+<section>
+<h2>VPC · Redes</h2><p class="description">VPCs e CIDRs retornados pelo emulador.</p>
+<div id="vpcs" class="empty">Carregando...</div>
+</section>
+<section>
+<h2>Subnets · Segmentos de rede</h2><p class="description">Subnets, VPC e zona de disponibilidade.</p>
+<div id="subnets" class="empty">Carregando...</div>
+</section>
+<section>
+<h2>Security Groups · Regras</h2><p class="description">Grupos e quantidade de regras de entrada (sem aplicar alterações).</p>
+<div id="security-groups" class="empty">Carregando...</div>
+</section>
 </div>
 <div id="warnings"></div>
 <footer><strong>Conta:</strong> <span id="account">aguardando</span> · <strong>Atualizado:</strong> <span id="updated">—</span><br>
@@ -78,12 +98,20 @@ document.getElementById("stat-buckets").textContent=data.buckets.length;
 document.getElementById("stat-queues").textContent=data.queues.length;
 document.getElementById("stat-jobs").textContent=data.jobs.length;
 document.getElementById("stat-workers").textContent=data.workers.filter(function(w){return w.active;}).length;
+document.getElementById("stat-instances").textContent=(data.instances||[]).length;
+document.getElementById("stat-vpcs").textContent=(data.vpcs||[]).length;
+document.getElementById("stat-subnets").textContent=(data.subnets||[]).length;
+document.getElementById("stat-sgs").textContent=(data.security_groups||[]).length;
 document.getElementById("account").textContent=data.account+" · "+data.mode;
 document.getElementById("updated").textContent=new Date(data.generated_at).toLocaleString("pt-BR");
 var b=[];data.buckets.forEach(function(bucket){b.push([bucket.name, bucket.objects.length+" objeto(s) exibido(s)",bucket.objects.map(function(o){return o.key+" ("+o.size+" B)";}).join("\n")||"Vazio"]);});
 replace("buckets",table(["Bucket","Itens","Objetos"],b));
 replace("queues",table(["Fila","Visíveis","Em processamento"],data.queues.map(function(q){return [q.name,q.visible,q.inflight];})));
 replace("jobs",table(["Job ID","Worker","Arquivo S3","Texto extraído"],data.jobs.map(function(j){return [j.job_id,j.worker_id,j.s3_key,j.snippet||"(sem texto)"];})));
+replace("instances",table(["ID","Nome","Estado","Tipo","IP privado","SG"],(data.instances||[]).map(function(v){return [v.id,v.name,v.state,v.type,v.ip,v.groups];})));
+replace("vpcs",table(["VPC ID","CIDR","Estado"],(data.vpcs||[]).map(function(v){return [v.id,v.cidr,v.state];})));
+replace("subnets",table(["Subnet ID","VPC","CIDR","AZ"],(data.subnets||[]).map(function(v){return [v.id,v.vpc_id,v.cidr,v.az];})));
+replace("security-groups",table(["Group ID","Nome","VPC","Regras de entrada"],(data.security_groups||[]).map(function(v){return [v.id,v.name,v.vpc_id,v.ingress];})));
 var wgrid=el("div",undefined,"worker-grid");data.workers.forEach(function(worker){var card=el("div",undefined,"worker"),head=el("div",undefined,"worker-head");head.appendChild(el("strong",worker.name));head.appendChild(el("span",worker.active?"ATIVO":"INATIVO",worker.active?"state":"state off"));card.appendChild(head);card.appendChild(el("small","PID: "+(worker.pid||"—")));card.appendChild(el("div",worker.logs.join("\n")||"Sem logs", "logs"));wgrid.appendChild(card);});replace("workers",wgrid);
 var ws=document.getElementById("warnings");ws.replaceChildren();if(data.warnings.length){ws.appendChild(el("div",data.warnings.join(" · "),"warn"));}
 }
