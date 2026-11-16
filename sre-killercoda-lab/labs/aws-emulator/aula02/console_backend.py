@@ -3,6 +3,8 @@
 Nao usa AWS real. O caller deve passar api.clients, que valida endpoint e Account.
 """
 from datetime import datetime, timezone
+import os
+import boto3
 from pathlib import Path
 
 import psycopg
@@ -53,6 +55,10 @@ def snapshot(clients_factory):
         "queues": [],
         "jobs": [],
         "workers": [worker_state(1), worker_state(2)],
+        "instances": [],
+        "vpcs": [],
+        "subnets": [],
+        "security_groups": [],
         "warnings": [],
     }
 
@@ -109,5 +115,48 @@ def snapshot(clients_factory):
                     })
     except Exception:
         result["warnings"].append("PostgreSQL indisponivel ou tabela ainda nao criada.")
+
+
+    # As credenciais/endpoint foram validados pela clients_factory acima.
+    # O painel usa exclusivamente a API EC2 do emulador, em modo leitura.
+    try:
+        ec2 = boto3.Session(region_name="us-east-1").client(
+            "ec2", endpoint_url="https://127.0.0.1:9297",
+            verify=os.environ["AWS_CA_BUNDLE"],
+        )
+        for reservation in ec2.describe_instances().get("Reservations", [])[:20]:
+            for instance in reservation.get("Instances", [])[:20]:
+                labels = {tag.get("Key"): tag.get("Value") for tag in instance.get("Tags", [])}
+                result["instances"].append({
+                    "id": instance.get("InstanceId", ""),
+                    "name": labels.get("Name", ""),
+                    "state": instance.get("State", {}).get("Name", ""),
+                    "type": instance.get("InstanceType", ""),
+                    "ip": instance.get("PrivateIpAddress", ""),
+                    "vpc_id": instance.get("VpcId", ""),
+                    "groups": ", ".join(g.get("GroupName", "") for g in instance.get("SecurityGroups", [])),
+                })
+        for vpc in ec2.describe_vpcs().get("Vpcs", [])[:25]:
+            result["vpcs"].append({
+                "id": vpc.get("VpcId", ""),
+                "cidr": vpc.get("CidrBlock", ""),
+                "state": vpc.get("State", ""),
+            })
+        for subnet in ec2.describe_subnets().get("Subnets", [])[:30]:
+            result["subnets"].append({
+                "id": subnet.get("SubnetId", ""),
+                "vpc_id": subnet.get("VpcId", ""),
+                "cidr": subnet.get("CidrBlock", ""),
+                "az": subnet.get("AvailabilityZone", ""),
+            })
+        for sg in ec2.describe_security_groups().get("SecurityGroups", [])[:30]:
+            result["security_groups"].append({
+                "id": sg.get("GroupId", ""),
+                "name": sg.get("GroupName", ""),
+                "vpc_id": sg.get("VpcId", ""),
+                "ingress": len(sg.get("IpPermissions", [])),
+            })
+    except Exception:
+        result["warnings"].append("Falha ao consultar EC2/VPC no emulador; demais secoes continuam disponiveis.")
 
     return result
