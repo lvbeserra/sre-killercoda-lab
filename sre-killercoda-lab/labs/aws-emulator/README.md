@@ -69,3 +69,15 @@ bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula02/start-api.
 ```
 
 Esta API ainda nao faz processamento do PDF nem grava em PostgreSQL.
+
+## Aula 03 (codigo publicado; teste pendente)
+
+Dois workers SQS concorrentes, extração de texto de PDF e gravacao PostgreSQL idempotente.
+Manual: [aula03/README.md](aula03/README.md).
+
+```bash
+bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula03/install-postgres.sh
+bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula03/start-workers.sh
+```
+
+Importante: configurar 3 tentativas e DLQ e assunto da Aula 04; ainda nao implementado.
