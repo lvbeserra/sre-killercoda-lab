@@ -57,3 +57,15 @@ Documentação oficial:
 - https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html
 - https://docs.aws.amazon.com/emulator/latest/userguide/point-sdk-to-emulator.html
 - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+## Aula 02 (codigo publicado; teste pendente)
+
+API FastAPI para receber PDF ficticio, armazenar em S3 e publicar evento no SQS.
+Manual e comandos: [aula02/README.md](aula02/README.md).
+Primeiro execute o bootstrap da Aula 01; depois, em outro terminal:
+
+```bash
+bash ~/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/aula02/start-api.sh
+```
+
+Esta API ainda nao faz processamento do PDF nem grava em PostgreSQL.
