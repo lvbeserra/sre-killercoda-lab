@@ -29,4 +29,6 @@ aws dynamodb scan --table-name sre-lab-jobs
 - DynamoDB do AWS Emulator e simulado; nao gera cobranca da AWS real.
 - Nao testa latencia, throughput, disponibilidade ou politicas IAM reais.
 - Tabela e itens emulados desaparecem com o termino da sessao.
-- Integracao automatica FastAPI/worker -> DynamoDB **ainda nao implementada**.
+- Integracao automatica worker -> DynamoDB **implementada no GitHub, aguardando teste ponta a ponta**. A API continua publicando no SQS; o worker grava no PostgreSQL e depois no DynamoDB antes de confirmar a mensagem.
+- Para carregar o codigo novo nos workers existentes: `bash sre-killercoda-lab/labs/aws-emulator/aula03/restart-workers.sh` (encerra somente os PIDs identificados deste laboratorio).
+- Para atualizar o painel web DynamoDB, reinicie a instancia de `console_server:app` previamente em execucao, pois o Uvicorn nao faz reload automatico.
