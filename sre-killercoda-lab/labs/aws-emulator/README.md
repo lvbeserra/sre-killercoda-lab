@@ -1,20 +1,18 @@
-# Laboratório AWS Emulator — recuperação em um comando
+# Laboratorio AWS Emulator — recuperacao em um comando
 
-## RESTAURACAO COMPLETA (Aulas 01 a 05 + console)
+## Restauracao completa (Aulas 01 a 07 + console)
 
-**Codigo publicado em 16/11/2026; a execucao completa a partir de Ubuntu novo ainda precisa de validacao no Killercoda.** O teste individual de cada aula foi realizado pelo Luiz; a politica DLQ na fila principal e a EC2/SG foram comprovadas manualmente.
-
-Em um Ubuntu 24.04 x86_64 temporario **com root, Internet e git**, execute:
+Em Ubuntu 24.04 x86_64 temporario com root, Internet e git:
 
 ```bash
 if [ -d "$HOME/sre-killercoda-lab/.git" ]; then git -C "$HOME/sre-killercoda-lab" pull --ff-only origin main; else git clone https://github.com/lvbeserra/sre-killercoda-lab.git "$HOME/sre-killercoda-lab"; fi && bash "$HOME/sre-killercoda-lab/sre-killercoda-lab/labs/aws-emulator/restore-all.sh"
 ```
 
-Esse comando recupera: AWS Emulator + AWS CLI, S3 e SQS Aula 01, PostgreSQL/schema, redrive policy DLQ da fila principal (3 tentativas), API FastAPI :8000, dois workers, VPC/subnet/SG/EC2 **simulados**, console web :8001/console. O teste intencional de falha na fila isolada da Aula 04 nao e executado automaticamente; rode `aula04/run.sh` se quiser.
+A restauracao tem nove etapas: AWS Emulator/CLI e S3/SQS, PostgreSQL, DLQ, FastAPI :8000, DynamoDB, dois workers, EC2/VPC/SG simulados, EKS/IAM/Node Group simulados e console web :8001/console.
 
-A instalacao utiliza apt-get e pip, leva alguns minutos. O script nao interrompe servicos desconhecidos que ocupem as portas 8000 e 8001; aborta com erro e logs. A API e somente localhost; o painel, leitura apenas, pode ser exposto pela funcionalidade Traffic / Ports do Killercoda.
+**Limites:** os recursos do AWS Emulator sao simulados, nao criam infraestrutura na conta AWS real. A EC2 nao e uma VM Linux utilizavel. O EKS tem API de gerenciamento e Kubernetes simulado, mas **nao executa containers**: Pods podem ser agendados e terminar em `StartError`. O estado do AWS Emulator, PDFs e banco PostgreSQL nao persistem entre sessoes Killercoda; o GitHub guarda scripts e documentacao, nao backups. Nunca use curriculos reais ou credenciais de producao.
 
-**Limite:** o estado do emulador, PDFs e registros do PostgreSQL de uma sessao anterior **nao sao recuperados**: a restauracao recria a configuracao e recursos, nao faz backup de dados. Nao coloque credenciais, certificados ou curriculos reais no GitHub. A EC2 representa somente metadados de API, nao VM executavel.
+Roteiros: [Aula 06 DynamoDB](aula06/README.md) e [Aula 07 EKS](aula07/README.md).
 
 ---
 
