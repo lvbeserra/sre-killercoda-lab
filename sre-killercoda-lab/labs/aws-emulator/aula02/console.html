@@ -49,6 +49,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
 <div class="stat"><span>VPCS</span><strong id="stat-vpcs">—</strong></div>
 <div class="stat"><span>SUBNETS</span><strong id="stat-subnets">—</strong></div>
 <div class="stat"><span>SECURITY GROUPS</span><strong id="stat-sgs">—</strong></div>
+<div class="stat"><span>JOBS DYNAMODB</span><strong id="stat-dynamo">—</strong></div>
 </div>
 <div class="layout">
 <section>
@@ -62,6 +63,10 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
 <section>
 <h2>PostgreSQL · Jobs processados</h2><p class="description">Últimos 20 resultados persistidos na tabela processed_jobs.</p>
 <div id="jobs" class="empty">Carregando...</div>
+</section>
+<section>
+<h2>DynamoDB · Status dos jobs</h2><p class="description">Até 20 registros de estado na tabela sre-lab-jobs, somente leitura.</p>
+<div id="dynamo-jobs" class="empty">Carregando...</div>
 </section>
 <section>
 <h2>Workers · Execução</h2><p class="description">Estado de dois processos e últimas linhas de seus logs.</p>
@@ -102,6 +107,7 @@ document.getElementById("stat-instances").textContent=(data.instances||[]).lengt
 document.getElementById("stat-vpcs").textContent=(data.vpcs||[]).length;
 document.getElementById("stat-subnets").textContent=(data.subnets||[]).length;
 document.getElementById("stat-sgs").textContent=(data.security_groups||[]).length;
+document.getElementById("stat-dynamo").textContent=(data.dynamo_jobs||[]).length;
 document.getElementById("account").textContent=data.account+" · "+data.mode;
 document.getElementById("updated").textContent=new Date(data.generated_at).toLocaleString("pt-BR");
 var b=[];data.buckets.forEach(function(bucket){b.push([bucket.name, bucket.objects.length+" objeto(s) exibido(s)",bucket.objects.map(function(o){return o.key+" ("+o.size+" B)";}).join("\n")||"Vazio"]);});
@@ -112,6 +118,7 @@ replace("instances",table(["ID","Nome","Estado","Tipo","IP privado","SG"],(data.
 replace("vpcs",table(["VPC ID","CIDR","Estado"],(data.vpcs||[]).map(function(v){return [v.id,v.cidr,v.state];})));
 replace("subnets",table(["Subnet ID","VPC","CIDR","AZ"],(data.subnets||[]).map(function(v){return [v.id,v.vpc_id,v.cidr,v.az];})));
 replace("security-groups",table(["Group ID","Nome","VPC","Regras de entrada"],(data.security_groups||[]).map(function(v){return [v.id,v.name,v.vpc_id,v.ingress];})));
+replace("dynamo-jobs",table(["Job ID","Status","Worker","Arquivo"],(data.dynamo_jobs||[]).map(function(j){return [j.job_id,j.status,j.worker,j.arquivo];})));
 var wgrid=el("div",undefined,"worker-grid");data.workers.forEach(function(worker){var card=el("div",undefined,"worker"),head=el("div",undefined,"worker-head");head.appendChild(el("strong",worker.name));head.appendChild(el("span",worker.active?"ATIVO":"INATIVO",worker.active?"state":"state off"));card.appendChild(head);card.appendChild(el("small","PID: "+(worker.pid||"—")));card.appendChild(el("div",worker.logs.join("\n")||"Sem logs", "logs"));wgrid.appendChild(card);});replace("workers",wgrid);
 var ws=document.getElementById("warnings");ws.replaceChildren();if(data.warnings.length){ws.appendChild(el("div",data.warnings.join(" · "),"warn"));}
 }
