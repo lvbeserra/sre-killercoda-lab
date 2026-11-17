@@ -54,6 +54,7 @@ def snapshot(clients_factory):
         "buckets": [],
         "queues": [],
         "jobs": [],
+        "dynamo_jobs": [],
         "workers": [worker_state(1), worker_state(2)],
         "instances": [],
         "vpcs": [],
@@ -158,5 +159,22 @@ def snapshot(clients_factory):
             })
     except Exception:
         result["warnings"].append("Falha ao consultar EC2/VPC no emulador; demais secoes continuam disponiveis.")
+
+    # DynamoDB: somente Scan com limite pequeno, sem gravacoes pelo painel.
+    try:
+        ddb = boto3.Session(region_name="us-east-1").client(
+            "dynamodb", endpoint_url="https://127.0.0.1:9297",
+            verify=os.environ["AWS_CA_BUNDLE"],
+        )
+        response = ddb.scan(TableName="sre-lab-jobs", Limit=20)
+        for item in response.get("Items", []):
+            result["dynamo_jobs"].append({
+                "job_id": item.get("job_id", {}).get("S", ""),
+                "status": item.get("status", {}).get("S", ""),
+                "worker": item.get("worker", {}).get("S", ""),
+                "arquivo": item.get("arquivo", {}).get("S", ""),
+            })
+    except Exception:
+        result["warnings"].append("DynamoDB indisponivel ou tabela sre-lab-jobs ausente.")
 
     return result
