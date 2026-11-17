@@ -1,4 +1,4 @@
-"""Aula 03: worker SQS -> S3 -> texto PDF -> PostgreSQL.
+"""Aulas 03/06: worker SQS -> S3 -> PDF -> PostgreSQL -> DynamoDB.
 
 Uso exclusivo com AWS Emulator 127.0.0.1; sem acesso a AWS real.
 """
@@ -17,6 +17,7 @@ from pypdf import PdfReader
 
 ENDPOINT = "https://127.0.0.1:9297"
 QUEUE_NAME = "curriculos-processar"
+DYNAMO_TABLE = "sre-lab-jobs"
 DB_DSN = "dbname=sre_curriculos user=root host=/var/run/postgresql"
 MAX_PDF_BYTES = 5 * 1024 * 1024
 
@@ -37,7 +38,7 @@ def emulator_clients():
     common = {"endpoint_url": ENDPOINT, "verify": ca}
     if session.client("sts", **common).get_caller_identity()["Account"] != "000000000000":
         raise RuntimeError("Conta real detectada; processamento bloqueado")
-    return session.client("s3", **common), session.client("sqs", **common)
+    return session.client("s3", **common), session.client("sqs", **common), session.client("dynamodb", **common)
 
 
 def extract_pdf_text(pdf_bytes):
@@ -49,7 +50,7 @@ def extract_pdf_text(pdf_bytes):
     return "\n".join((page.extract_text() or "") for page in pdf.pages)
 
 
-def process_message(worker_id, s3, sqs, queue_url, message):
+def process_message(worker_id, s3, sqs, dynamodb, queue_url, message):
     receipt = message["ReceiptHandle"]
     try:
         job = json.loads(message["Body"])
@@ -90,6 +91,24 @@ def process_message(worker_id, s3, sqs, queue_url, message):
                     else:
                         logger.info("DUPLICADO job_id=%s ja gravado; ignorando", job_id)
             # A transacao confirmou antes do ACK da fila.
+        # PostgreSQL confirma primeiro; DynamoDB e gravado antes do ACK SQS.
+        # Em falha do DynamoDB, mensagem volta e PG nao processa duas vezes.
+        try:
+            dynamodb.put_item(
+                TableName=DYNAMO_TABLE,
+                Item={
+                    "job_id": {"S": job_id},
+                    "status": {"S": "PROCESSADO"},
+                    "worker": {"S": str(worker_id)},
+                    "arquivo": {"S": key},
+                },
+                ConditionExpression="attribute_not_exists(job_id)",
+            )
+            logger.info("DYNAMODB PROCESSADO job_id=%s", job_id)
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") != "ConditionalCheckFailedException":
+                raise
+            logger.info("DYNAMODB DUPLICADO job_id=%s; registro preservado", job_id)
         sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt)
         logger.info("ACK SQS job_id=%s", job_id)
         return True
@@ -104,7 +123,7 @@ def main():
     parser.add_argument("--worker-id", required=True)
     args = parser.parse_args()
 
-    s3, sqs = emulator_clients()
+    s3, sqs, dynamodb = emulator_clients()
     queue_url = sqs.get_queue_url(QueueName=QUEUE_NAME)["QueueUrl"]
     logger.info("Worker iniciado id=%s fila=%s", args.worker_id, QUEUE_NAME)
     while True:
@@ -116,7 +135,7 @@ def main():
                 VisibilityTimeout=60,
             ).get("Messages", [])
             for message in batch:
-                process_message(args.worker_id, s3, sqs, queue_url, message)
+                process_message(args.worker_id, s3, sqs, dynamodb, queue_url, message)
         except KeyboardInterrupt:
             logger.info("Worker encerrado pelo usuario")
             return
