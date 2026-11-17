@@ -49,12 +49,12 @@ start_service() {
   exit 1
 }
 start_service api 8000 http://127.0.0.1:8000/health 'aula02-api' "$lab_dir/aula02/start-api.sh"
-echo '== 5/8 Workers SQS/PostgreSQL Aula 03 =='
-bash "$lab_dir/aula03/start-workers.sh"
-echo '== 6/8 EC2 / VPC / SG simulados Aula 05 =='
-bash "$lab_dir/aula05/run.sh"
-echo '== 7/8 DynamoDB Aula 06 =='
+echo '== 5/8 DynamoDB Aula 06 =='
 bash "$lab_dir/aula06/run.sh"
+echo '== 6/8 Workers SQS/PostgreSQL Aula 03 =='
+bash "$lab_dir/aula03/start-workers.sh"
+echo '== 7/8 EC2 / VPC / SG simulados Aula 05 =='
+bash "$lab_dir/aula05/run.sh"
 echo '== 8/8 Console visual SOMENTE LEITURA em 8001 =='
 start_service console 8001 http://127.0.0.1:8001/health 'read-only-console' "$lab_dir/aula02/start-console.sh"
 echo
