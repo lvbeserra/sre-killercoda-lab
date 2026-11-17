@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Restaura Aulas 01-05 em Ubuntu x86_64 com permissao root (KillerCoda).
+# Restaura Aulas 01-06 em Ubuntu x86_64 com permissao root (KillerCoda).
 # Scripts sao versionados, estado de dados e EC2 emulada nao persiste na expiração.
 set -euo pipefail
 lab_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,18 +11,18 @@ if [ "$(uname -m)" != x86_64 ] || ! command -v apt-get >/dev/null; then
   echo 'Requer Ubuntu/Debian x86_64 com apt-get.' >&2
   exit 1
 fi
-echo '== 1/7 AWS Emulator, AWS CLI e Aula 01 S3/SQS =='
+echo '== 1/8 AWS Emulator, AWS CLI e Aula 01 S3/SQS =='
 bash "$lab_dir/bootstrap.sh"
 source "$lab_dir/env.sh"
-echo '== 2/7 PostgreSQL e schema Aula 03 =='
+echo '== 2/8 PostgreSQL e schema Aula 03 =='
 if pg_isready -q 2>/dev/null && psql -d sre_curriculos -tAc "SELECT to_regclass('public.processed_jobs')" 2>/dev/null | grep -qx processed_jobs; then
   echo 'PostgreSQL e tabela existentes; preservando os dados.'
 else
   bash "$lab_dir/aula03/install-postgres.sh"
 fi
-echo '== 3/7 RedrivePolicy / DLQ Aula 04 =='
+echo '== 3/8 RedrivePolicy / DLQ Aula 04 =='
 bash "$lab_dir/aula04/configure-main-dlq.sh"
-echo '== 4/7 API FastAPI Aula 02 em 127.0.0.1:8000 =='
+echo '== 4/8 API FastAPI Aula 02 em 127.0.0.1:8000 =='
 start_service() {
   local name="$1" port="$2" probe="$3" match="$4" startup="$5"
   local logfile="/tmp/aws-emulator-${name}.log"
@@ -49,11 +49,13 @@ start_service() {
   exit 1
 }
 start_service api 8000 http://127.0.0.1:8000/health 'aula02-api' "$lab_dir/aula02/start-api.sh"
-echo '== 5/7 Workers SQS/PostgreSQL Aula 03 =='
+echo '== 5/8 Workers SQS/PostgreSQL Aula 03 =='
 bash "$lab_dir/aula03/start-workers.sh"
-echo '== 6/7 EC2 / VPC / SG simulados Aula 05 =='
+echo '== 6/8 EC2 / VPC / SG simulados Aula 05 =='
 bash "$lab_dir/aula05/run.sh"
-echo '== 7/7 Console visual SOMENTE LEITURA em 8001 =='
+echo '== 7/8 DynamoDB Aula 06 =='
+bash "$lab_dir/aula06/run.sh"
+echo '== 8/8 Console visual SOMENTE LEITURA em 8001 =='
 start_service console 8001 http://127.0.0.1:8001/health 'read-only-console' "$lab_dir/aula02/start-console.sh"
 echo
 echo '== RESTAURACAO FINALIZADA (recursos simulados/recriados) =='
